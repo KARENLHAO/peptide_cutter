@@ -1,0 +1,1060 @@
+{
+  "schema_version": "1.1",
+  "description": "Cleavage rules from the corrected (修正版) table. Each enzyme contains one or more cleavage motifs; constraints apply to positions relative to the scissile bond (P1 | P1'). Each position is encoded with include/exclude amino-acid one-letter codes. Unconstrained positions are omitted. For Thrombin motif #2, P2' is shown as the original shorthand 'not DE' (raw) and normalized to exclude=[D,E].",
+  "positions": [
+    "P4",
+    "P3",
+    "P2",
+    "P1",
+    "P1_prime",
+    "P2_prime"
+  ],
+  "cut": "between P1 and P1_prime",
+  "enzymes": {
+    "Arg-C proteinase": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Asp-N endopeptidase": {
+      "cleaves": [
+        {
+          "P1_prime": {
+            "include": [
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    "BNPS-Skatole": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "W"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 1": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "F",
+              "W",
+              "Y",
+              "L"
+            ]
+          },
+          "P2": {
+            "include": [
+              "H",
+              "A",
+              "T"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 2": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "D"
+            ]
+          },
+          "P3": {
+            "include": [
+              "V"
+            ]
+          },
+          "P2": {
+            "include": [
+              "A"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 3": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "D"
+            ]
+          },
+          "P3": {
+            "include": [
+              "M"
+            ]
+          },
+          "P2": {
+            "include": [
+              "Q"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 4": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "L"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "V"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 5": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "L",
+              "W"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "H"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 6": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "V"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "H",
+              "I"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 7": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "D"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "V"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 8": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "I",
+              "L"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "T"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "E",
+              "D",
+              "Q",
+              "K",
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 9": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "L"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "H"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    "Caspase 10": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "I"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "A"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    "Chymotrypsin-high specificity (C-term to [FYW], not before P)": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "F",
+              "Y"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        },
+        {
+          "P1": {
+            "include": [
+              "W"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "M",
+              "P"
+            ]
+          }
+        }
+      ]
+    },
+    "Chymotrypsin-low specificity (C-term to [FYWML], not before P)": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "F",
+              "L",
+              "Y"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        },
+        {
+          "P1": {
+            "include": [
+              "W"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "M",
+              "P"
+            ]
+          }
+        },
+        {
+          "P1": {
+            "include": [
+              "M"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P",
+              "Y"
+            ]
+          }
+        },
+        {
+          "P1": {
+            "include": [
+              "H"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "D",
+              "M",
+              "P",
+              "W"
+            ]
+          }
+        }
+      ]
+    },
+    "Clostripain": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "CNBr": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "M"
+            ]
+          }
+        }
+      ]
+    },
+    "Enterokinase": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "D",
+              "E"
+            ]
+          },
+          "P3": {
+            "include": [
+              "D",
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "D",
+              "E"
+            ]
+          },
+          "P1": {
+            "include": [
+              "K"
+            ]
+          }
+        }
+      ]
+    },
+    "Factor Xa": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "A",
+              "F",
+              "G",
+              "I",
+              "L",
+              "T",
+              "V",
+              "M"
+            ]
+          },
+          "P3": {
+            "include": [
+              "D",
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "G"
+            ]
+          },
+          "P1": {
+            "include": [
+              "R"
+            ]
+          }
+        }
+      ]
+    },
+    "Formic acid": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    "Glutamyl endopeptidase": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "E"
+            ]
+          }
+        }
+      ]
+    },
+    "GranzymeB": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": [
+              "I"
+            ]
+          },
+          "P3": {
+            "include": [
+              "E"
+            ]
+          },
+          "P2": {
+            "include": [
+              "P"
+            ]
+          },
+          "P1": {
+            "include": [
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    "Hydroxylamine": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "N"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "G"
+            ]
+          }
+        }
+      ]
+    },
+    "Iodosobenzoic acid": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "W"
+            ]
+          }
+        }
+      ]
+    },
+    "LysC": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "K"
+            ]
+          }
+        }
+      ]
+    },
+    "Neutrophil elastase": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "A",
+              "V"
+            ]
+          }
+        }
+      ]
+    },
+    "NTCB": {
+      "cleaves": [
+        {
+          "P1_prime": {
+            "include": [
+              "C"
+            ]
+          }
+        }
+      ]
+    },
+    "Pepsin (pH 1.3)": {
+      "cleaves": [
+        {
+          "P3": {
+            "exclude": [
+              "H",
+              "K",
+              "R"
+            ]
+          },
+          "P2": {
+            "exclude": [
+              "P"
+            ]
+          },
+          "P1": {
+            "exclude": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "F",
+              "L"
+            ]
+          },
+          "P2_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        },
+        {
+          "P3": {
+            "exclude": [
+              "H",
+              "K",
+              "R"
+            ]
+          },
+          "P2": {
+            "exclude": [
+              "P"
+            ]
+          },
+          "P1": {
+            "include": [
+              "F",
+              "L"
+            ]
+          },
+          "P2_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        }
+      ]
+    },
+    "Pepsin (pH > 2)": {
+      "cleaves": [
+        {
+          "P3": {
+            "exclude": [
+              "H",
+              "K",
+              "R"
+            ]
+          },
+          "P2": {
+            "exclude": [
+              "P"
+            ]
+          },
+          "P1": {
+            "exclude": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "F",
+              "L",
+              "W",
+              "Y"
+            ]
+          },
+          "P2_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        },
+        {
+          "P3": {
+            "exclude": [
+              "H",
+              "K",
+              "R"
+            ]
+          },
+          "P2": {
+            "exclude": [
+              "P"
+            ]
+          },
+          "P1": {
+            "include": [
+              "F",
+              "L",
+              "W",
+              "Y"
+            ]
+          },
+          "P2_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        }
+      ]
+    },
+    "Proline-endopeptidase": {
+      "cleaves": [
+        {
+          "P2": {
+            "include": [
+              "H",
+              "K",
+              "R"
+            ]
+          },
+          "P1": {
+            "include": [
+              "P"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        }
+      ]
+    },
+    "Proteinase K": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "A",
+              "E",
+              "F",
+              "I",
+              "L",
+              "T",
+              "V",
+              "W",
+              "Y"
+            ]
+          }
+        }
+      ]
+    },
+    "Staphylococcal peptidase I": {
+      "cleaves": [
+        {
+          "P2": {
+            "exclude": [
+              "E"
+            ]
+          },
+          "P1": {
+            "include": [
+              "E"
+            ]
+          }
+        }
+      ]
+    },
+    "Thermolysin": {
+      "cleaves": [
+        {
+          "P1": {
+            "exclude": [
+              "D",
+              "E"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "A",
+              "F",
+              "I",
+              "L",
+              "M",
+              "V"
+            ]
+          }
+        }
+      ]
+    },
+    "Thrombin": {
+      "cleaves": [
+        {
+          "P2": {
+            "include": [
+              "G"
+            ]
+          },
+          "P1": {
+            "include": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "G"
+            ]
+          }
+        },
+        {
+          "P4": {
+            "include": [
+              "A",
+              "F",
+              "G",
+              "I",
+              "L",
+              "T",
+              "V",
+              "M"
+            ]
+          },
+          "P3": {
+            "include": [
+              "A",
+              "F",
+              "G",
+              "I",
+              "L",
+              "T",
+              "V",
+              "W"
+            ]
+          },
+          "P2": {
+            "include": [
+              "P"
+            ]
+          },
+          "P1": {
+            "include": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "D",
+              "E"
+            ]
+          },
+          "P2_prime": {
+            "exclude": [
+              "D",
+              "E"
+            ],
+            "raw": "not DE"
+          }
+        }
+      ]
+    },
+    "Trypsin (please note the exceptions!)": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": [
+              "K",
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "exclude": [
+              "P"
+            ]
+          }
+        },
+        {
+          "P2": {
+            "include": [
+              "W"
+            ]
+          },
+          "P1": {
+            "include": [
+              "K"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "P"
+            ]
+          }
+        },
+        {
+          "P2": {
+            "include": [
+              "M"
+            ]
+          },
+          "P1": {
+            "include": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "P"
+            ]
+          }
+        }
+      ],
+      "no_cleavage_exceptions": [
+        {
+          "P2": {
+            "include": [
+              "C",
+              "D"
+            ]
+          },
+          "P1": {
+            "include": [
+              "K"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "D"
+            ]
+          }
+        },
+        {
+          "P2": {
+            "include": [
+              "C"
+            ]
+          },
+          "P1": {
+            "include": [
+              "K"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "H",
+              "Y"
+            ]
+          }
+        },
+        {
+          "P2": {
+            "include": [
+              "C"
+            ]
+          },
+          "P1": {
+            "include": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "K"
+            ]
+          }
+        },
+        {
+          "P2": {
+            "include": [
+              "R"
+            ]
+          },
+          "P1": {
+            "include": [
+              "R"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "H",
+              "R"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

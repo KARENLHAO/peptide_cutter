@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "peptide-cutter"
+version = "0.1.0"
+description = "PeptideCutter: cleavage site prediction"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "PeptideCutter"}]
+
+[project.scripts]
+peptide-cutter = "peptide_cutter.cli:main"
+
+[tool.setuptools]
+packages = ["peptide_cutter"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

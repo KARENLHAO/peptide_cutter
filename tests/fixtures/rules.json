@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "description": "test rules",
+  "positions": [
+    "P4",
+    "P3",
+    "P2",
+    "P1",
+    "P1_prime",
+    "P2_prime"
+  ],
+  "cut": "between P1 and P1_prime",
+  "enzymes": {
+    "Testase": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": ["K"]
+          }
+        }
+      ],
+      "no_cleavage_exceptions": [
+        {
+          "P1": {
+            "include": ["K"]
+          },
+          "P1_prime": {
+            "include": ["P"]
+          }
+        }
+      ]
+    },
+    "Edgease": {
+      "cleaves": [
+        {
+          "P4": {
+            "include": ["K"]
+          },
+          "P1": {
+            "include": ["R"]
+          }
+        }
+      ]
+    },
+    "Twinase": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": ["R"]
+          }
+        }
+      ]
+    },
+    "Twinase2": {
+      "cleaves": [
+        {
+          "P1": {
+            "include": ["R"]
+          }
+        }
+      ]
+    }
+  }
+}
