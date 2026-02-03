@@ -35,12 +35,6 @@ def render_result_txt(
     for name in summary["selected_sorted"]:
         parts.append(f"- {name}")
 
-    do_not_cut = summary["do_not_cut"]
-    if do_not_cut:
-        parts.append("The selected enzymes do not cut: " + ", ".join(do_not_cut))
-    else:
-        parts.append("The selected enzymes do not cut: None")
-
     parts.append("")
     parts.append("## Part 3: Cleavage site table")
     parts.append(
@@ -48,10 +42,18 @@ def render_result_txt(
     )
     parts.append("| --- | --- | --- |")
     for row in summary["table_rows"]:
+        if row["count"] == 0:
+            continue
         positions = ", ".join(str(p) for p in row["sites"]) if row["sites"] else "-"
         parts.append(
             f"| {row['name']} | {row['count']} | {positions} |"
         )
+
+    do_not_cut = summary["do_not_cut"]
+    if do_not_cut:
+        parts.append("The selected enzymes do not cut: " + ", ".join(do_not_cut))
+    else:
+        parts.append("The selected enzymes do not cut: None")
 
     parts.append("")
     parts.append("## Part 4: Sequence map")

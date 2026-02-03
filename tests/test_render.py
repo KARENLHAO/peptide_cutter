@@ -69,5 +69,6 @@ def test_render_golden_fragment():
         "| Testase | 1 | 2 |\n"
         "| Twinase | 2 | 3, 4 |\n"
         "| Twinase2 | 2 | 3, 4 |\n"
+        "The selected enzymes do not cut: None\n"
     )
     assert expected in content

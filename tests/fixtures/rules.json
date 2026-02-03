@@ -19,7 +19,7 @@
           }
         }
       ],
-      "no_cleavage_exceptions": [
+      "blocks": [
         {
           "P1": {
             "include": ["K"]

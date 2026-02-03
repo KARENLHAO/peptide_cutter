@@ -32,7 +32,7 @@ class Motif:
 class EnzymeRule:
     name: str
     cleaves: List[Motif]
-    exceptions: List[Motif]
+    blocks: List[Motif]
 
 
 @dataclass(frozen=True)
@@ -85,16 +85,31 @@ def _parse_enzyme_rule(name: str, rule_data: dict) -> EnzymeRule:
     if not isinstance(cleaves_data, list) or not cleaves_data:
         raise ValueError(f"Enzyme '{name}' must have a non-empty cleaves list.")
 
-    exceptions_data = rule_data.get("no_cleavage_exceptions", [])
-    if exceptions_data is None:
-        exceptions_data = []
-    if not isinstance(exceptions_data, list):
-        raise ValueError(f"Enzyme '{name}' exceptions must be a list.")
+    blocks_data = _merge_blocks(rule_data)
+    if not isinstance(blocks_data, list):
+        raise ValueError(f"Enzyme '{name}' blocks must be a list.")
 
     cleaves = [_parse_motif(motif, name) for motif in cleaves_data]
-    exceptions = [_parse_motif(motif, name) for motif in exceptions_data]
+    blocks = [_parse_motif(motif, name) for motif in blocks_data]
 
-    return EnzymeRule(name=name, cleaves=cleaves, exceptions=exceptions)
+    return EnzymeRule(name=name, cleaves=cleaves, blocks=blocks)
+
+
+def _merge_blocks(rule_data: dict) -> List[dict]:
+    blocks = rule_data.get("blocks")
+    legacy = rule_data.get("no_cleavage_exceptions")
+
+    if blocks is None and legacy is None:
+        return []
+    if blocks is None:
+        return legacy or []
+    if legacy is None:
+        return blocks or []
+
+    if not isinstance(blocks, list) or not isinstance(legacy, list):
+        return blocks if isinstance(blocks, list) else legacy
+
+    return list(blocks) + list(legacy)
 
 
 def _parse_motif(motif_data: dict, enzyme_name: str) -> Motif:

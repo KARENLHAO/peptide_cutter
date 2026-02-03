@@ -16,11 +16,9 @@ def find_cleavage_sites(
             raise KeyError(f"Unknown enzyme: {enzyme_name}")
         rule = rules.enzymes[enzyme_name]
         sites = set()
-        for cut_after in range(1, length):
+        for cut_after in range(1, length + 1):
             if _matches_any_motif(seq, cut_after, rule.cleaves):
-                if rule.exceptions and _matches_any_motif(
-                    seq, cut_after, rule.exceptions
-                ):
+                if rule.blocks and _matches_any_motif(seq, cut_after, rule.blocks):
                     continue
                 sites.add(cut_after)
         sites_by_enzyme[enzyme_name] = sorted(sites)

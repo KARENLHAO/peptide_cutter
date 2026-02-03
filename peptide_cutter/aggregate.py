@@ -1,10 +1,22 @@
 from __future__ import annotations
 
-from typing import Dict, List
+import re
+from typing import Dict, List, Tuple
+
+
+def _natural_key(text: str) -> Tuple:
+    parts = re.split(r"(\d+)", text)
+    key: List[object] = []
+    for part in parts:
+        if part.isdigit():
+            key.append(int(part))
+        else:
+            key.append(part.lower())
+    return tuple(key)
 
 
 def build_summary(selected: List[str], sites_by_enzyme: Dict[str, List[int]]) -> Dict:
-    selected_sorted = sorted(selected)
+    selected_sorted = sorted(selected, key=_natural_key)
     table_rows = []
     do_not_cut = []
 

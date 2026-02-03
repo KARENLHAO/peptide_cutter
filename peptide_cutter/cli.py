@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import re
 from pathlib import Path
 from typing import Dict, List
 
@@ -17,7 +18,8 @@ def main(argv: List[str] | None = None) -> int:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--seq", help="Sequence text (raw or FASTA)")
     group.add_argument("--fasta", help="FASTA file path")
-    parser.add_argument("--rules", default="./cleavage_rules.json")
+    rules_default = Path(__file__).with_name("cleavage_rules.json")
+    parser.add_argument("--rules", default=str(rules_default))
     parser.add_argument("--enzymes", nargs="+", required=True)
     parser.add_argument("--out", default="./result.txt")
     parser.add_argument("--line-width", type=int, default=60)
@@ -80,7 +82,7 @@ def _parse_replacements(values: List[str]) -> Dict[str, str]:
 
 def _select_enzymes(requested: List[str], rules) -> List[str]:
     if len(requested) == 1 and requested[0].lower() == "all":
-        return sorted(rules.enzymes.keys())
+        return sorted(rules.enzymes.keys(), key=_natural_key)
     if any(item.lower() == "all" for item in requested):
         raise ValueError("--enzymes 'all' cannot be combined with other names")
 
@@ -88,7 +90,18 @@ def _select_enzymes(requested: List[str], rules) -> List[str]:
     missing = [name for name in requested_unique if name not in rules.enzymes]
     if missing:
         raise ValueError("Unknown enzymes: " + ", ".join(sorted(missing)))
-    return requested_unique
+    return sorted(requested_unique, key=_natural_key)
+
+
+def _natural_key(text: str):
+    parts = re.split(r"(\d+)", text)
+    key: List[object] = []
+    for part in parts:
+        if part.isdigit():
+            key.append(int(part))
+        else:
+            key.append(part.lower())
+    return tuple(key)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.1",
-  "description": "Cleavage rules from the corrected (修正版) table. Each enzyme contains one or more cleavage motifs; constraints apply to positions relative to the scissile bond (P1 | P1'). Each position is encoded with include/exclude amino-acid one-letter codes. Unconstrained positions are omitted. For Thrombin motif #2, P2' is shown as the original shorthand 'not DE' (raw) and normalized to exclude=[D,E].",
+  "description": "Cleavage rules from the corrected table. Each enzyme contains one or more cleavage motifs; constraints apply to positions relative to the scissile bond (P1 | P1'). Each position is encoded with include/exclude amino-acid one-letter codes. Unconstrained positions are omitted. 'not ...' clauses are normalized to exclude lists. Trypsin exceptions are encoded under Trypsin.blocks and must veto cleavage if matched. Note: Proline-endopeptidase[*] is reported to cleave only substrates <=30 aa (per table note). TEV protease uses the simplified PeptideCutter motif X-Y-X-Q-[G/S] due to lack of P5/P6 handling.",
   "positions": [
     "P4",
     "P3",
@@ -28,6 +28,18 @@
           "P1_prime": {
             "include": [
               "D"
+            ]
+          }
+        }
+      ]
+    },
+    "Asp-N endopeptidase + N-terminal Glu": {
+      "cleaves": [
+        {
+          "P1_prime": {
+            "include": [
+              "D",
+              "E"
             ]
           }
         }
@@ -466,7 +478,7 @@
         }
       ]
     },
-    "Clostripain": {
+    "Clostripain (Clostridiopeptidase B)": {
       "cleaves": [
         {
           "P1": {
@@ -599,7 +611,7 @@
         }
       ]
     },
-    "Hydroxylamine": {
+    "Hydroxylamine  (NH2OH)": {
       "cleaves": [
         {
           "P1": {
@@ -637,6 +649,17 @@
         }
       ]
     },
+    "LysN": {
+      "cleaves": [
+        {
+          "P1_prime": {
+            "include": [
+              "K"
+            ]
+          }
+        }
+      ]
+    },
     "Neutrophil elastase": {
       "cleaves": [
         {
@@ -649,7 +672,7 @@
         }
       ]
     },
-    "NTCB": {
+    "NTCB (2-nitro-5-thiocyanobenzoic acid)": {
       "cleaves": [
         {
           "P1_prime": {
@@ -660,7 +683,7 @@
         }
       ]
     },
-    "Pepsin (pH 1.3)": {
+    "Pepsin (pH1.3)": {
       "cleaves": [
         {
           "P3": {
@@ -719,7 +742,7 @@
         }
       ]
     },
-    "Pepsin (pH > 2)": {
+    "Pepsin (pH>2)": {
       "cleaves": [
         {
           "P3": {
@@ -782,7 +805,7 @@
         }
       ]
     },
-    "Proline-endopeptidase": {
+    "Proline-endopeptidase[*]": {
       "cleaves": [
         {
           "P2": {
@@ -840,6 +863,28 @@
         }
       ]
     },
+    "Tobacco etch virus protease": {
+      "cleaves": [
+        {
+          "P3": {
+            "include": [
+              "Y"
+            ]
+          },
+          "P1": {
+            "include": [
+              "Q"
+            ]
+          },
+          "P1_prime": {
+            "include": [
+              "G",
+              "S"
+            ]
+          }
+        }
+      ]
+    },
     "Thermolysin": {
       "cleaves": [
         {
@@ -857,6 +902,11 @@
               "L",
               "M",
               "V"
+            ]
+          },
+          "P2_prime": {
+            "exclude": [
+              "P"
             ]
           }
         }
@@ -903,7 +953,8 @@
               "L",
               "T",
               "V",
-              "W"
+              "W",
+              "R"
             ]
           },
           "P2": {
@@ -926,13 +977,12 @@
             "exclude": [
               "D",
               "E"
-            ],
-            "raw": "not DE"
+            ]
           }
         }
       ]
     },
-    "Trypsin (please note the exceptions!)": {
+    "Trypsin": {
       "cleaves": [
         {
           "P1": {
@@ -959,7 +1009,7 @@
             ]
           },
           "P1_prime": {
-            "include": [
+            "exclude": [
               "P"
             ]
           }
@@ -976,13 +1026,13 @@
             ]
           },
           "P1_prime": {
-            "include": [
+            "exclude": [
               "P"
             ]
           }
         }
       ],
-      "no_cleavage_exceptions": [
+      "blocks": [
         {
           "P2": {
             "include": [
