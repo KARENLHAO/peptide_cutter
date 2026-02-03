@@ -128,7 +128,7 @@ The report contains four fixed parts in order:
 |  | - | - | W | K | not P | - |
 |  | - | - | M | R | not P | - |
 
-*注：脯氨酸内肽酶仅能切割序列不超过30个氨基酸的底物。 一种特殊的β螺旋结构域调控蛋白质水解：参见Fulop等，1998年。
+[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see Fulop et al., 1998.
 
 
 ---
