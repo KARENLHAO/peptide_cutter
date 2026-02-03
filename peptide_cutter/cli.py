@@ -3,12 +3,19 @@ from __future__ import annotations
 import argparse
 import sys
 import re
+import random
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from .aggregate import build_summary
 from .engine import find_cleavage_sites
-from .render import render_result_txt, write_result
+from .render import (
+    render_part3_csv,
+    render_result_parts,
+    write_part3_csv,
+    write_result_parts,
+)
+from .part4 import generate_enzyme_txts, merge_enzyme_txts, read_csv_rows
 from .rules import load_rules
 from .sequence import extract_fasta_header, parse_sequence, validate_sequence
 
@@ -22,17 +29,31 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--rules", default=str(rules_default))
     parser.add_argument("--enzymes", nargs="+", required=True)
     parser.add_argument("--out", default="./result.txt")
-    parser.add_argument("--line-width", type=int, default=60)
-    parser.add_argument("--replace", action="append", default=[])
-
+    parser.add_argument(
+        "--line-width",
+        type=int,
+        default=60,
+        help="Line width for sequence display and Part 4 blocks (10-60).",
+    )
+    parser.add_argument(
+        "--prob",
+        type=float,
+        default=1.0,
+        help="Probability [0-1] to keep cleavage sites for the selected enzyme.",
+    )
+    parser.add_argument(
+        "--prob-target",
+        choices=["trypsin", "chymotrypsin"],
+        default="trypsin",
+        help="Which enzyme the --prob applies to.",
+    )
     args = parser.parse_args(argv)
 
     try:
         text = _load_input_text(args.seq, args.fasta)
         accession, description = extract_fasta_header(text)
         seq = parse_sequence(text)
-        replacements = _parse_replacements(args.replace)
-        seq, meta = validate_sequence(seq, strict=True, replacements=replacements)
+        seq, meta = validate_sequence(seq, strict=True)
         meta["accession"] = accession
         meta["description"] = description
 
@@ -41,14 +62,45 @@ def main(argv: List[str] | None = None) -> int:
 
         if not 10 <= args.line_width <= 60:
             raise ValueError("--line-width must be between 10 and 60.")
+        if not 0.0 <= args.prob <= 1.0:
+            raise ValueError("--prob must be between 0 and 1.")
 
         rules = load_rules(args.rules)
         selected = _select_enzymes(args.enzymes, rules)
 
         sites_by_enzyme = find_cleavage_sites(seq, rules, selected)
+        if args.prob < 1.0:
+            rng = random.Random()
+            for enzyme_name, sites in sites_by_enzyme.items():
+                if args.prob_target == "trypsin" and enzyme_name == "Trypsin":
+                    sites_by_enzyme[enzyme_name] = [
+                        pos for pos in sites if rng.random() < args.prob
+                    ]
+                elif args.prob_target == "chymotrypsin" and enzyme_name.startswith(
+                    "Chymotrypsin"
+                ):
+                    sites_by_enzyme[enzyme_name] = [
+                        pos for pos in sites if rng.random() < args.prob
+                    ]
         summary = build_summary(selected, sites_by_enzyme)
-        content = render_result_txt(seq, meta, selected, summary, args.line_width)
-        write_result(args.out, content)
+        parts = render_result_parts(seq, meta, selected, summary, args.line_width)
+        write_result_parts(args.out, parts)
+        part3_csv = render_part3_csv(summary)
+        csv_path = write_part3_csv(args.out, part3_csv)
+        enzyme_dir = Path("tmp") / "enzyme_txts"
+        rows = read_csv_rows(str(csv_path))
+        generate_enzyme_txts(
+            rows=rows,
+            seq_id=meta.get("accession", "SEQ"),
+            seq=seq,
+            out_dir=enzyme_dir,
+            block_size=args.line_width,
+        )
+        merge_enzyme_txts(
+            indir=enzyme_dir,
+            out_path=Path("tmp") / "parts_txts" / "result_part4.txt",
+            block_size=args.line_width,
+        )
         return 0
     except Exception as exc:  # noqa: BLE001
         print(f"Error: {exc}", file=sys.stderr)
@@ -64,20 +116,6 @@ def _load_input_text(seq_arg: str | None, fasta_path: str | None) -> str:
     if seq_arg is not None:
         return seq_arg
     raise ValueError("Either --seq or --fasta must be provided.")
-
-
-def _parse_replacements(values: List[str]) -> Dict[str, str]:
-    mapping: Dict[str, str] = {}
-    for value in values:
-        if "=" not in value:
-            raise ValueError("--replace must be in the form X=Y")
-        src, dst = value.split("=", 1)
-        src = src.strip().upper()
-        dst = dst.strip().upper()
-        if len(src) != 1 or len(dst) != 1:
-            raise ValueError("--replace must use single-letter amino acids")
-        mapping[src] = dst
-    return mapping
 
 
 def _select_enzymes(requested: List[str], rules) -> List[str]:

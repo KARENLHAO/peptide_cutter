@@ -18,7 +18,9 @@ tests/
 .idea/
 
 # Local outputs
-result
+*.txt
 
 # Codex skills
 .codex/
+
+result*

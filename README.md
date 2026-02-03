@@ -1,6 +1,6 @@
 # PeptideCutter
 
-PeptideCutter predicts potential cleavage sites for protein sequences under multiple proteases/chemicals using a local `peptide_cutter/cleavage_rules.json` file and writes a Markdown report to `result.txt`.
+PeptideCutter predicts potential cleavage sites for protein sequences under multiple proteases/chemicals using a local `peptide_cutter/cleavage_rules.json` file and writes parts 1-3 into `tmp/parts_txts/`, plus per-enzyme and merged Part 4 outputs into `tmp/enzyme_txts/` and `tmp/parts_txts/`.
 
 ## Installation
 
@@ -34,7 +34,7 @@ peptide-cutter --fasta ./G3P_HUMAM_P04406.fasta \
   --out ./result.txt
 ```
 
-Line width for sequence map (10-60):
+Line width for sequence display (10-60):
 
 ```
 peptide-cutter --seq "ACDEFGHIKLMNPQRSTVWY" --enzymes all --line-width 40
@@ -44,33 +44,28 @@ peptide-cutter --seq "ACDEFGHIKLMNPQRSTVWY" --enzymes all --line-width 40
 
 - `--seq`: raw or FASTA text input.
 - `--fasta`: FASTA file path.
-- `--rules`: rules JSON path (default `peptide_cutter/cleavage_rules.json`).
 - `--enzymes`: enzyme names or `all`.
-- `--out`: output file path (default `./result.txt`).
-- `--line-width`: sequence map window width (10-60, default 60).
-- `--replace`: explicit replacement mapping, repeatable, e.g. `--replace B=D --replace Z=E`.
+- `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
+- `--prob`: probability [0-1] to keep cleavage sites for the selected enzyme (default 1.0).
+- `--prob-target`: which enzyme `--prob` applies to (`trypsin` or `chymotrypsin`, default `trypsin`).
 
-## Illegal Characters and Replacement Rules
+Note: when `--prob` is less than 1.0, the selected enzyme’s cleavage sites are randomly sampled each run.
 
-By default, any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard letters) cause an error. The error message includes the illegal characters and their 1-based positions.
+## Illegal Characters
 
-Replacement guidance:
+Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard letters) cause an error. The error message includes the illegal character(s).
 
-- `B` (Asx) -> `D` or `N`
-- `Z` (Glx) -> `E` or `Q`
-- `J` (Xle) -> `I` or `L`
-- `X` must be explicitly replaced to a concrete amino acid
+## Output Files
 
-Only explicitly provided replacements are applied. When replacements are applied, the report notes the mapping and counts in Part 1.
+The report is written into three text files in `tmp/parts_txts/`. `--out` specifies the
+base filename (default `./result.txt`), and the tool writes:
 
-## Output (`result.txt`) Structure
-
-The report contains four fixed parts in order:
-
-1. Input sequence display (identifier, description, length, 60 aa/line with numbering)
-2. Selected cleavage enzymes and chemicals list (alphabetical)
-3. Cleavage site table + `The selected enzymes do not cut: ...`
-4. Sequence map in a Markdown code block, with merged identical maps using `_`
+1. `tmp/parts_txts/result_part1.txt`: Input sequence display (identifier, description, length, line width from `--line-width`)
+2. `tmp/parts_txts/result_part2.txt`: Selected cleavage enzymes and chemicals list (alphabetical)
+3. `tmp/parts_txts/result_part3.txt`: Cleavage site table + `The selected enzymes do not cut: ...`
+4. `./result.csv`: CSV version of the Part 3 cleavage site table (written to current directory)
+5. `tmp/enzyme_txts/*.txt`: Per-enzyme cleavage tracks (one file per enzyme/chemical)
+6. `tmp/parts_txts/result_part4.txt`: Merged Part 4 track file
 
 ## Cleavage Rules Reference
 

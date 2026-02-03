@@ -1,76 +1,112 @@
 from __future__ import annotations
 
+import csv
+import io
+from pathlib import Path
 from typing import Dict, List
+
+
+def render_result_parts(
+    seq: str, meta: Dict, selected: List[str], summary: Dict, line_width: int
+) -> List[str]:
+    part1: List[str] = []
+    part1.append("Input sequence display")
+
+    accession = meta.get("accession", "User_Sequence")
+    part1.append(f"Accession: {accession}")
+    part1.append(f"The sequence is {len(seq)} amino acids long.")
+    part1.append("```")
+    part1.append(_render_sequence_display(seq, line_width))
+    part1.append("```")
+    part1.append(f"The sequence is {len(seq)} amino acids long.")
+
+    part2: List[str] = []
+    part2.append(
+        "Selected cleavage enzymes and chemicals [available enzymes]:"
+    )
+    for name in summary["selected_sorted"]:
+        part2.append(f"- {name}")
+
+    part3: List[str] = []
+    part3.append("Cleavage site table")
+    part3.append(
+        "| Name of enzyme | No. of cleavages | Positions of cleavage sites |"
+    )
+    part3.append("| --- | --- | --- |")
+    for row in summary["table_rows"]:
+        if row["count"] == 0:
+            continue
+        positions = ", ".join(str(p) for p in row["sites"]) if row["sites"] else "-"
+        part3.append(f"| {row['name']} | {row['count']} | {positions} |")
+
+    part3.append("")
+    do_not_cut = summary["do_not_cut"]
+    if do_not_cut:
+        part3.append("The selected enzymes do not cut: " + ", ".join(do_not_cut))
+    else:
+        part3.append("The selected enzymes do not cut: None")
+
+    return [
+        _finalize_section(part1),
+        _finalize_section(part2),
+        _finalize_section(part3),
+    ]
 
 
 def render_result_txt(
     seq: str, meta: Dict, selected: List[str], summary: Dict, line_width: int
 ) -> str:
-    parts: List[str] = []
-    parts.append("## Part 1: Input sequence display")
+    parts = render_result_parts(seq, meta, selected, summary, line_width)
+    return "\n\n".join(part.rstrip() for part in parts).rstrip() + "\n"
 
-    accession = meta.get("accession", "User_Sequence")
-    description = meta.get("description", "N/A")
-    parts.append(f"Accession: {accession}")
-    parts.append(f"Description: {description}")
-    parts.append(f"The sequence is {len(seq)} amino acids long.")
-    parts.append("```")
-    parts.append(_render_sequence_display(seq))
-    parts.append("```")
 
-    replacements = meta.get("replacements", {})
-    if replacements:
-        replacement_notes = []
-        for src in sorted(replacements):
-            info = replacements[src]
-            replacement_notes.append(
-                f"{src}->{info['to']} (count={info['count']})"
-            )
-        parts.append("Replacements applied: " + "; ".join(replacement_notes))
-
-    parts.append("")
-    parts.append(
-        "## Part 2: Selected cleavage enzymes and chemicals (all) [available enzymes]:"
+def render_part3_csv(summary: Dict) -> str:
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(
+        ["Name of enzyme", "No. of cleavages", "Positions of cleavage sites"]
     )
-    for name in summary["selected_sorted"]:
-        parts.append(f"- {name}")
-
-    parts.append("")
-    parts.append("## Part 3: Cleavage site table")
-    parts.append(
-        "| Name of enzyme | No. of cleavages | Positions of cleavage sites |"
-    )
-    parts.append("| --- | --- | --- |")
     for row in summary["table_rows"]:
         if row["count"] == 0:
             continue
         positions = ", ".join(str(p) for p in row["sites"]) if row["sites"] else "-"
-        parts.append(
-            f"| {row['name']} | {row['count']} | {positions} |"
-        )
-
-    do_not_cut = summary["do_not_cut"]
-    if do_not_cut:
-        parts.append("The selected enzymes do not cut: " + ", ".join(do_not_cut))
-    else:
-        parts.append("The selected enzymes do not cut: None")
-
-    parts.append("")
-    parts.append("## Part 4: Sequence map")
-    parts.append("```")
-    parts.append(_render_sequence_map(seq, summary["groups"], line_width))
-    parts.append("```")
-
-    return "\n".join(parts).rstrip() + "\n"
+        name = _clean_csv_enzyme_name(row["name"])
+        writer.writerow([name, row["count"], positions])
+    return buffer.getvalue()
 
 
-def write_result(path: str, content: str) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
+def write_result_parts(path: str, parts: List[str]) -> List[Path]:
+    base = Path(path)
+    suffix = base.suffix or ".txt"
+    stem = base.stem if base.suffix else base.name
+    out_dir = _resolve_output_dir()
+    outputs: List[Path] = []
+    for index, content in enumerate(parts, start=1):
+        out_path = out_dir / f"{stem}_part{index}{suffix}"
+        out_path.write_text(content, encoding="utf-8")
+        outputs.append(out_path)
+    return outputs
 
 
-def _render_sequence_display(seq: str) -> str:
-    width = 60
+def write_part3_csv(path: str, csv_text: str) -> Path:
+    out_path = Path("result.csv")
+    out_path.write_text(csv_text, encoding="utf-8")
+    return out_path
+
+
+def _resolve_output_dir() -> Path:
+    out_dir = Path("tmp") / "parts_txts"
+    enzyme_dir = Path("tmp") / "enzyme_txts"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    enzyme_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir
+
+
+def _finalize_section(lines: List[str]) -> str:
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _render_sequence_display(seq: str, width: int) -> str:
     index_width = len(str(len(seq)))
     lines: List[str] = []
     for start in range(1, len(seq) + 1, width):
@@ -81,38 +117,6 @@ def _render_sequence_display(seq: str) -> str:
     return "\n".join(lines)
 
 
-def _render_sequence_map(seq: str, groups: List[Dict], line_width: int) -> str:
-    label_width = max(
-        [len(group["name"]) for group in groups] + [len("Ruler"), len("Sequence")]
-    )
-    length = len(seq)
-    lines: List[str] = []
-
-    for start in range(1, length + 1, line_width):
-        end = min(start + line_width - 1, length)
-        chunk = seq[start - 1 : end]
-        lines.append(f"Window {start}-{end}")
-        for group in groups:
-            marker = _marker_line(group["sites"], start, end, line_width)
-            lines.append(f"{group['name']:<{label_width}} {marker}")
-        ruler = _build_ruler(start, len(chunk)).ljust(line_width)
-        lines.append(f"{'Ruler':<{label_width}} {ruler}")
-        lines.append(f"{'Sequence':<{label_width}} {chunk.ljust(line_width)}")
-        if end < length:
-            lines.append("")
-
-    return "\n".join(lines)
-
-
-def _marker_line(sites: List[int], start: int, end: int, width: int) -> str:
-    site_set = set(sites)
-    length = end - start + 1
-    markers = ["|" if pos in site_set else " " for pos in range(start, end + 1)]
-    if length < width:
-        markers.extend([" "] * (width - length))
-    return "".join(markers)
-
-
 def _build_ruler(start: int, length: int) -> str:
     if length <= 0:
         return ""
@@ -121,3 +125,7 @@ def _build_ruler(start: int, length: int) -> str:
         pos = start + offset - 1
         blocks.append(f"{pos:>10}")
     return "".join(blocks)
+
+
+def _clean_csv_enzyme_name(name: str) -> str:
+    return name.replace("[*]", "").strip()
