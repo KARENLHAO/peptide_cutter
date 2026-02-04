@@ -49,8 +49,8 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
 - `--out`: output HTML path or directory (default `.`). If a directory is provided (e.g. `.`),
   the tool writes `report.html` inside it. CSV is written alongside the HTML as `result.csv`.
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
-- `--prob`: probability [0-1] to keep cleavage sites for the selected enzyme (default 1.0).
-- `--prob-target`: which enzyme `--prob` applies to (`trypsin` or `chymotrypsin`, default `trypsin`).
+- `--prob`: per-site probability [0-1] to keep cleavage sites for the selected enzyme (requires `--prob-target`).
+- `--prob-target`: which enzyme `--prob` applies to (`trypsin` or `chymotrypsin`).
 - `--cleanup-tmp`: remove the `tmp/` directory after the run completes.
 
 Note: when `--prob` is less than 1.0, the selected enzyme’s cleavage sites are randomly sampled each run.

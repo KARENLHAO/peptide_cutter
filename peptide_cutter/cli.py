@@ -56,14 +56,14 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument(
         "--prob",
         type=float,
-        default=1.0,
-        help="Probability [0-1] to keep cleavage sites for the selected enzyme.",
+        default=None,
+        help="Per-site probability [0-1] to keep cleavage sites for the selected enzyme. Requires --prob-target.",
     )
     parser.add_argument(
         "--prob-target",
         choices=["trypsin", "chymotrypsin"],
-        default="trypsin",
-        help="Which enzyme the --prob applies to.",
+        default=None,
+        help="Which enzyme the --prob applies to (required when using --prob).",
     )
     parser.add_argument(
         "--cleanup-tmp",
@@ -85,14 +85,17 @@ def main(argv: List[str] | None = None) -> int:
 
         if not 10 <= args.line_width <= 60:
             raise ValueError("--line-width must be between 10 and 60.")
-        if not 0.0 <= args.prob <= 1.0:
-            raise ValueError("--prob must be between 0 and 1.")
+        if args.prob is not None:
+            if args.prob_target is None:
+                raise ValueError("--prob requires --prob-target.")
+            if not 0.0 <= args.prob <= 1.0:
+                raise ValueError("--prob must be between 0 and 1.")
 
         rules = load_rules(args.rules)
         selected = _select_enzymes(args.enzymes, rules)
 
         sites_by_enzyme = find_cleavage_sites(seq, rules, selected)
-        if args.prob < 1.0:
+        if args.prob is not None and args.prob < 1.0:
             rng = random.Random()
             for enzyme_name, sites in sites_by_enzyme.items():
                 if args.prob_target == "trypsin" and enzyme_name == "Trypsin":
