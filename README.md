@@ -1,8 +1,7 @@
-# PeptideCutter
+# Peptide-Cutter
 
-> Note: This project is inspired by the ExPASy lab’s PeptideCutter and implemented based on public information and our own understanding. No source code was obtained through illegal or unauthorized means. Reference: https://web.expasy.org/peptide_cutter/
+Peptide-Cutter is a local, lightweight tool for predicting protease/chemical cleavage sites in protein sequences. It reads raw or FASTA input, applies curated cleavage rules, and generates a clean HTML report plus a CSV table of cutting points. The report is organized into four sections: input sequence display, selected enzymes, cutting table, and cleavage mapping.
 
-PeptideCutter predicts potential cleavage sites for protein sequences under multiple proteases/chemicals using a local `peptide_cutter/cleavage_rules.json` file and writes parts 1-3 into `tmp/parts_txts/`, plus per-enzyme and merged Part 4 outputs into `tmp/enzyme_txts/` and `tmp/parts_txts/`.
 
 ## Installation
 
