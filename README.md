@@ -46,8 +46,7 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
 - `--fasta`: FASTA file path.
 - `--enzymes`: enzyme names/abbreviations or `all`. Multiple enzymes can be
   provided as a semicolon-separated string, e.g. `"Casp1;Tryps;FXa"`.
-- `--out`: output HTML path or directory (default `.`). If a directory is provided (e.g. `.`),
-  the tool writes `report.html` inside it. CSV is written alongside the HTML as `result.csv`.
+- `--out`: output  directory (default `.`).
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
 - `--prob`: per-site probability [0-1] to keep cleavage sites for the selected enzyme (requires `--prob-target`).
 - `--prob-target`: which enzyme `--prob` applies to (`trypsin` or `chymotrypsin`).
