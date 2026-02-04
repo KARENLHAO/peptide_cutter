@@ -18,7 +18,12 @@ from .render import (
     write_result_parts,
 )
 from .utils.html_report import build_html_report
-from .utils.merge_part4_txts import generate_enzyme_txts, render_part4_text_from_rows
+from .utils.merge_part4_txts import (
+    enzyme_abbr,
+    generate_enzyme_txts,
+    normalize_abbr,
+    render_part4_text_from_rows,
+)
 from .rules import load_rules
 from .sequence import extract_fasta_header, parse_sequence, validate_sequence
 
@@ -30,7 +35,13 @@ def main(argv: List[str] | None = None) -> int:
     group.add_argument("--fasta", help="FASTA file path")
     rules_default = Path(__file__).with_name("cleavage_rules.json")
     parser.add_argument("--rules", default=str(rules_default))
-    parser.add_argument("--enzymes", nargs="+", required=True)
+    parser.add_argument(
+        "--enzymes",
+        nargs="+",
+        required=True,
+        help="Enzyme names or abbreviations. Use 'all' for all enzymes. "
+        "Multiple enzymes can be provided as a semicolon-separated string.",
+    )
     parser.add_argument(
         "--out",
         default=".",
@@ -155,16 +166,41 @@ def _load_input_text(seq_arg: str | None, fasta_path: str | None) -> str:
 
 
 def _select_enzymes(requested: List[str], rules) -> List[str]:
+    requested = _split_enzymes_args(requested)
     if len(requested) == 1 and requested[0].lower() == "all":
         return sorted(rules.enzymes.keys(), key=_natural_key)
     if any(item.lower() == "all" for item in requested):
         raise ValueError("--enzymes 'all' cannot be combined with other names")
 
-    requested_unique = sorted(set(requested))
-    missing = [name for name in requested_unique if name not in rules.enzymes]
+    full_names = list(rules.enzymes.keys())
+    full_by_lower = {name.lower(): name for name in full_names}
+    abbr_map: dict[str, str] = {}
+    for name in full_names:
+        try:
+            abbr = normalize_abbr(enzyme_abbr(name)).lower()
+        except Exception:
+            continue
+        abbr_map.setdefault(abbr, name)
+
+    resolved: List[str] = []
+    missing: List[str] = []
+    for token in requested:
+        if token in rules.enzymes:
+            resolved.append(token)
+            continue
+        lower = token.lower()
+        if lower in full_by_lower:
+            resolved.append(full_by_lower[lower])
+            continue
+        abbr = normalize_abbr(token).lower()
+        if abbr in abbr_map:
+            resolved.append(abbr_map[abbr])
+            continue
+        missing.append(token)
+
     if missing:
         raise ValueError("Unknown enzymes: " + ", ".join(sorted(missing)))
-    return sorted(requested_unique, key=_natural_key)
+    return sorted(set(resolved), key=_natural_key)
 
 
 def _natural_key(text: str):
@@ -176,6 +212,19 @@ def _natural_key(text: str):
         else:
             key.append(part.lower())
     return tuple(key)
+
+
+def _split_enzymes_args(raw: List[str]) -> List[str]:
+    if not raw:
+        return []
+    if len(raw) == 1:
+        value = raw[0].strip()
+        if value.lower() == "all":
+            return [value]
+        if ";" in value:
+            return [item.strip() for item in value.split(";") if item.strip()]
+        return [value]
+    return [item.strip() for item in raw if item.strip()]
 
 
 def _resolve_html_out(out_arg: str) -> Path:
