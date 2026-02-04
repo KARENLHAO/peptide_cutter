@@ -1,5 +1,4 @@
 # Peptide-Cutter
-
 Peptide-Cutter is a local, lightweight tool for predicting protease/chemical cleavage sites in protein sequences. It reads raw or FASTA input, applies curated cleavage rules, and generates a clean HTML report plus a CSV table of cutting points. The report is organized into four sections: input sequence display, selected enzymes, cutting table, and cleavage mapping.
 
 
