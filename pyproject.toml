@@ -17,6 +17,9 @@ peptide-cutter = "peptide_cutter.cli:main"
 [tool.setuptools]
 packages = ["peptide_cutter", "peptide_cutter.utils"]
 
+[tool.setuptools.package-data]
+peptide_cutter = ["cleavage_rules.json"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
