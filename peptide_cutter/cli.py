@@ -4,6 +4,8 @@ import argparse
 import sys
 import re
 import random
+import shutil
+import os
 from pathlib import Path
 from typing import List
 
@@ -15,7 +17,8 @@ from .render import (
     write_part3_csv,
     write_result_parts,
 )
-from .part4 import generate_enzyme_txts, merge_enzyme_txts, read_csv_rows
+from .utils.html_report import build_html_report
+from .utils.merge_part4_txts import generate_enzyme_txts, render_part4_text_from_rows
 from .rules import load_rules
 from .sequence import extract_fasta_header, parse_sequence, validate_sequence
 
@@ -28,7 +31,11 @@ def main(argv: List[str] | None = None) -> int:
     rules_default = Path(__file__).with_name("cleavage_rules.json")
     parser.add_argument("--rules", default=str(rules_default))
     parser.add_argument("--enzymes", nargs="+", required=True)
-    parser.add_argument("--out", default="./result.txt")
+    parser.add_argument(
+        "--out",
+        default=".",
+        help="Output directory (default: .).",
+    )
     parser.add_argument(
         "--line-width",
         type=int,
@@ -46,6 +53,11 @@ def main(argv: List[str] | None = None) -> int:
         choices=["trypsin", "chymotrypsin"],
         default="trypsin",
         help="Which enzyme the --prob applies to.",
+    )
+    parser.add_argument(
+        "--cleanup-tmp",
+        action="store_true",
+        help="Remove the tmp directory after the run completes.",
     )
     args = parser.parse_args(argv)
 
@@ -84,11 +96,19 @@ def main(argv: List[str] | None = None) -> int:
                     ]
         summary = build_summary(selected, sites_by_enzyme)
         parts = render_result_parts(seq, meta, selected, summary, args.line_width)
-        write_result_parts(args.out, parts)
+
+        html_out = _resolve_html_out(args.out)
+        txt_base = html_out.with_suffix(".txt")
+
+        write_result_parts(str(txt_base), parts)
         part3_csv = render_part3_csv(summary)
-        csv_path = write_part3_csv(args.out, part3_csv)
+        write_part3_csv(str(html_out), part3_csv)
         enzyme_dir = Path("tmp") / "enzyme_txts"
-        rows = read_csv_rows(str(csv_path))
+        rows = [
+            (row["name"], row["sites"])
+            for row in summary["table_rows"]
+            if row["count"] > 0
+        ]
         generate_enzyme_txts(
             rows=rows,
             seq_id=meta.get("accession", "SEQ"),
@@ -96,11 +116,27 @@ def main(argv: List[str] | None = None) -> int:
             out_dir=enzyme_dir,
             block_size=args.line_width,
         )
-        merge_enzyme_txts(
-            indir=enzyme_dir,
-            out_path=Path("tmp") / "parts_txts" / "result_part4.txt",
+        part4_text = render_part4_text_from_rows(
+            rows=rows,
+            seq=seq,
             block_size=args.line_width,
         )
+        part4_path = Path("tmp") / "parts_txts" / f"{txt_base.stem}_part4.txt"
+        part4_path.write_text(part4_text, encoding="utf-8")
+
+        html = build_html_report(
+            seq=seq,
+            meta=meta,
+            summary=summary,
+            line_width=args.line_width,
+            part4_text=part4_text,
+        )
+        html_out.write_text(html, encoding="utf-8")
+
+        if args.cleanup_tmp:
+            tmp_dir = Path("tmp")
+            if tmp_dir.exists():
+                shutil.rmtree(tmp_dir)
         return 0
     except Exception as exc:  # noqa: BLE001
         print(f"Error: {exc}", file=sys.stderr)
@@ -140,6 +176,21 @@ def _natural_key(text: str):
         else:
             key.append(part.lower())
     return tuple(key)
+
+
+def _resolve_html_out(out_arg: str) -> Path:
+    if not out_arg:
+        return Path("./report.html")
+    if out_arg.endswith(os.sep) or out_arg in {".", ".."}:
+        out_dir = Path(out_arg)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return out_dir / "report.html"
+    out_path = Path(out_arg)
+    if out_path.exists() and out_path.is_dir():
+        return out_path / "report.html"
+    if out_path.suffix.lower() != ".html":
+        return out_path.with_suffix(".html")
+    return out_path
 
 
 if __name__ == "__main__":

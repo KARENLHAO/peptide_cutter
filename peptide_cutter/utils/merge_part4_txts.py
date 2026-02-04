@@ -1,10 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
+import argparse
 import csv
+import os
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
-
 
 ENZYME_ABBR_MAP = {
     "Arg-C proteinase": "ArgC",
@@ -201,6 +205,23 @@ def number_line(start_pos: int, end_pos: int, left_pad: int, width: int) -> str:
             line[j] = ch
 
     return "".join(line).rstrip()
+
+
+def tick_number_line(start_pos: int, end_pos: int, left_pad: int, width: int) -> str:
+    index_width = max(len(str(start_pos)), len(str(end_pos)))
+    tick = []
+    for i in range(width):
+        if (i + 1) % 10 == 0:
+            tick.append("+")
+        else:
+            tick.append("-")
+    ruler = "".join(tick)
+
+    prefix_len = max(0, left_pad - (index_width + 3))
+    prefix = " " * prefix_len
+    left_num = f"{start_pos:>{index_width}}"
+    right_num = f"{end_pos:>{index_width}}"
+    return f"{prefix}{left_num}   {ruler}   {right_num}".rstrip()
 
 
 def render_block_for_enzyme(
@@ -478,6 +499,7 @@ def render_block_by_positions(
     block_start: int,
     events: List[Tuple[int, str]],
     left_pad: int,
+    ruler_style: str = "numbers",
 ) -> str:
     width = len(block_seq)
     rows: List[List[str]] = []
@@ -536,7 +558,14 @@ def render_block_by_positions(
         out_lines.append("".join(rows[r]).rstrip())
 
     out_lines.append((" " * left_pad) + block_seq)
-    out_lines.append(number_line(block_start, block_start + width - 1, left_pad, width))
+    if ruler_style == "ticks":
+        out_lines.append(
+            tick_number_line(block_start, block_start + width - 1, left_pad, width)
+        )
+    else:
+        out_lines.append(
+            number_line(block_start, block_start + width - 1, left_pad, width)
+        )
     return "\n".join(out_lines)
 
 
@@ -590,10 +619,6 @@ def merge_enzyme_txts(
     left_pad = max_label_len + 2
 
     out_lines: List[str] = []
-    out_lines.append(
-        "Cleavage sites of the chosen enzymes and chemicals mapped onto your sequence:"
-    )
-    out_lines.append("")
     for block_start in range(1, seq_len + 1, block_size):
         block_end = min(block_start + block_size - 1, seq_len)
         block_seq = seq[block_start - 1 : block_end]
@@ -609,6 +634,7 @@ def merge_enzyme_txts(
                 block_start=block_start,
                 events=events,
                 left_pad=left_pad,
+                ruler_style="numbers",
             )
         )
         out_lines.append("")
@@ -616,3 +642,111 @@ def merge_enzyme_txts(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(out_lines).rstrip() + "\n", encoding="utf-8")
     return out_path
+
+
+def render_part4_text_from_rows(
+    rows: List[Tuple[str, List[int]]],
+    seq: str,
+    block_size: int = 80,
+) -> str:
+    if not seq:
+        raise ValueError("Sequence is empty for Part 4 rendering.")
+
+    abbr_to_positions: Dict[str, Set[int]] = {}
+    enzyme_order: List[str] = []
+    for enzyme_name, positions in rows:
+        abbr = normalize_abbr(enzyme_abbr(enzyme_name))
+        abbr_to_positions[abbr] = set(positions)
+        enzyme_order.append(abbr)
+
+    pos_to_abbrs: Dict[int, Set[str]] = {}
+    seq_len = len(seq)
+    for abbr, pos_set in abbr_to_positions.items():
+        for p in pos_set:
+            if 1 <= p <= seq_len:
+                pos_to_abbrs.setdefault(p, set()).add(abbr)
+
+    order_index = {a: i for i, a in enumerate(enzyme_order)}
+
+    def join_abbrs(abbrs: Set[str]) -> str:
+        items = sorted(abbrs, key=lambda x: (order_index.get(x, 10**9), x))
+        return "_".join(items)
+
+    pos_to_label: Dict[int, str] = {p: join_abbrs(s) for p, s in pos_to_abbrs.items()}
+    max_label_len = max((len(lbl) for lbl in pos_to_label.values()), default=0)
+    left_pad = max_label_len + 2
+
+    out_lines: List[str] = []
+
+    for block_start in range(1, seq_len + 1, block_size):
+        block_end = min(block_start + block_size - 1, seq_len)
+        block_seq = seq[block_start - 1 : block_end]
+
+        positions = [
+            p for p in sorted(pos_to_label.keys()) if block_start <= p <= block_end
+        ]
+        events = [(p, pos_to_label[p]) for p in positions]
+
+        out_lines.append(
+            render_block_by_positions(
+                block_seq=block_seq,
+                block_start=block_start,
+                events=events,
+                left_pad=left_pad,
+                ruler_style="ticks",
+            )
+        )
+        out_lines.append("")
+
+    return "\n".join(out_lines).rstrip() + "\n"
+
+
+def resolve_output_path(out_arg: str) -> Path:
+    out_arg = out_arg or "result_part4.txt"
+    if out_arg.endswith(os.sep) or os.path.isdir(out_arg):
+        os.makedirs(out_arg, exist_ok=True)
+        return Path(out_arg) / "result_part4.txt"
+    parent = os.path.dirname(out_arg) or "."
+    os.makedirs(parent, exist_ok=True)
+    return Path(out_arg)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(
+        description=(
+            "Merge per-enzyme txts into one result_part4.txt (per-position combo labels + staircase tracks)."
+        )
+    )
+    ap.add_argument(
+        "--indir", required=True, help="Directory containing per-enzyme *.txt files."
+    )
+    ap.add_argument(
+        "--out",
+        default="tmp/parts_txts/result_part4.txt",
+        help="Output merged txt path.",
+    )
+    ap.add_argument(
+        "--fasta",
+        default=None,
+        help="Optional FASTA (single record). If provided, use it for sequence.",
+    )
+    ap.add_argument(
+        "--block-size", type=int, default=60, help="Residues per block (default: 60)."
+    )
+    args = ap.parse_args()
+
+    out_path = resolve_output_path(args.out)
+    merge_enzyme_txts(
+        indir=Path(args.indir),
+        out_path=out_path,
+        fasta_path=args.fasta,
+        block_size=args.block_size,
+    )
+
+    print(f"[OK] merged -> {out_path}")
+    print(f"     indir: {args.indir}")
+    print(f"     block_size: {args.block_size}")
+
+
+if __name__ == "__main__":
+    main()

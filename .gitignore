@@ -24,3 +24,11 @@ tests/
 .codex/
 
 result*
+
+run.sh
+
+*fasta
+
+*html
+
+G3P_HUMAM_P04406.fasta

@@ -4,7 +4,7 @@
 import argparse
 from pathlib import Path
 
-from peptide_cutter.part4 import (
+from peptide_cutter.utils.merge_part4_txts import (
     generate_enzyme_txts,
     read_csv_rows,
     read_single_fasta,

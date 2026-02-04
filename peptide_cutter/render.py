@@ -26,6 +26,13 @@ def render_result_parts(
     )
     for name in summary["selected_sorted"]:
         part2.append(f"- {name}")
+    if _has_proline_endopeptidase(summary["selected_sorted"]):
+        part2.append(
+            "[*] NOTE: Proline-endopeptidase was reported to cleave only substrates "
+            "whose sequences do not exceed 30 amino acids. An unusual beta-propeller "
+            "domain regulates proteolysis: see Fulop et al., 1998. "
+            "https://pubmed.ncbi.nlm.nih.gov/9695945/"
+        )
 
     part3: List[str] = []
     part3.append("Cleavage site table")
@@ -89,7 +96,10 @@ def write_result_parts(path: str, parts: List[str]) -> List[Path]:
 
 
 def write_part3_csv(path: str, csv_text: str) -> Path:
-    out_path = Path("result.csv")
+    base = Path(path)
+    out_dir = base.parent if base.suffix else base
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "result.csv"
     out_path.write_text(csv_text, encoding="utf-8")
     return out_path
 
@@ -104,6 +114,14 @@ def _resolve_output_dir() -> Path:
 
 def _finalize_section(lines: List[str]) -> str:
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _has_proline_endopeptidase(names: List[str]) -> bool:
+    for name in names:
+        cleaned = name.replace("[*]", "").strip()
+        if cleaned == "Proline-endopeptidase":
+            return True
+    return False
 
 
 def _render_sequence_display(seq: str, width: int) -> str:
