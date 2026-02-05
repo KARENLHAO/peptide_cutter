@@ -137,8 +137,8 @@ This Arg/Lys specificity is seen with pure alpha- and beta-trypsins. Trypsin pre
 | Caspase 9 | L | E | H | D | - | - |
 | Caspase 10 | I | E | A | D | - | - |
 | Chymotrypsin-high specificity (C-term to [FYW], not before P) | - | - | - | F or Y | not P | - |
-|  | - | - | - | W | not P | - |
-| Chymotrypsin-low specificity (C-term to [FYWML], not before P) | - | - | - | F,L or Y | not M or P | - |
+|  | - | - | - | W | not M or P | - |
+| Chymotrypsin-low specificity (C-term to [FYWML], not before P) | - | - | - | F,L or Y | not P | - |
 |  | - | - | - | W | not M or P | - |
 |  | - | - | - | M | not P or Y | - |
 |  | - | - | - | H | not D,M,P or W | - |
@@ -167,8 +167,8 @@ This Arg/Lys specificity is seen with pure alpha- and beta-trypsins. Trypsin pre
 | Thrombin | - | - | G | R | G | - |
 |  | A,F,G,I,L,T,V or M | A,F,G,I,L,T,V,W or R | P | R | not D or E | not D or E |
 | Trypsin | - | - | - | K or R | not P | - |
-|  | - | - | W | K | not P | - |
-|  | - | - | M | R | not P | - |
+|  | - | - | W | K | P | - |
+|  | - | - | M | R | P | - |
 
 *注：脯氨酸内肽酶仅能切割序列不超过30个氨基酸的底物。一种特殊的β螺旋结构域调控蛋白质水解：参见 Fulop 等，1998 年。
 
