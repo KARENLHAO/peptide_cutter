@@ -38,7 +38,7 @@ def main():
     parser.add_argument(
         "--output",
         default=".",
-        help="Output directory (default: .).",
+        help="Base output directory (default: .).",
     )
     parser.add_argument(
         "--line-width",
