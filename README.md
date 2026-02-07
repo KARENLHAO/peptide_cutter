@@ -46,11 +46,7 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
   provided as a semicolon-separated string, e.g. `"Casp1;Tryps;FXa"`.
 - `--out`: output  directory (default `.`).
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
-- `--prob`: per-site probability [0-1] to keep cleavage sites for the selected enzyme (requires `--prob-target`).
-- `--prob-target`: which enzyme `--prob` applies to (`trypsin` or `chymotrypsin`).
 - `--cleanup-tmp`: remove the `tmp/` directory after the run completes.
-
-Note: when `--prob` is less than 1.0, the selected enzyme’s cleavage sites are randomly sampled each run.
 
 ## Illegal Characters
 

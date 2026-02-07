@@ -46,18 +46,6 @@ def main():
         default=60,
         help="Line width for sequence display and Part 4 blocks (10-60).",
     )
-    parser.add_argument(
-        "--prob",
-        type=float,
-        default=None,
-        help="Probability [0-1] to keep cleavage sites for the selected enzyme.",
-    )
-    parser.add_argument(
-        "--prob-target",
-        choices=["trypsin", "chymotrypsin"],
-        default="trypsin",
-        help="Which enzyme the --prob applies to.",
-    )
     args = parser.parse_args()
 
     cmd = [
@@ -73,7 +61,5 @@ def main():
         str(args.line_width),
         "--cleanup-tmp",
     ]
-    if args.prob is not None:
-        cmd.extend(["--prob", str(args.prob), "--prob-target", args.prob_target])
 
     run_ext_cmder(cmd)
