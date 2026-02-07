@@ -41,10 +41,11 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
 ## Parameters
 
 - `--seq`: raw or FASTA text input.
-- `--fasta`: FASTA file path.
+- `--fasta`: FASTA file path. Multi-FASTA is supported (up to 10,000 records).
 - `--enzymes`: enzyme names/abbreviations or `all`. Multiple enzymes can be
   provided as a semicolon-separated string, e.g. `"Casp1;Tryps;FXa"`.
-- `--out`: output  directory (default `.`).
+- `--out`: base output directory (default `.`). 
+  under this directory with `report/` and `csv/` subfolders.
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
 - `--cleanup-tmp`: remove the `tmp/` directory after the run completes.
 
@@ -54,12 +55,17 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 ## Output Files
 
-- CSV (`result.csv`): Table of cutting points in the sequence.
-- HTML (`report.html`): 4 parts
+- CSV (`results/csv/<chain_id>.csv`): Table of cutting points in the sequence.
+- HTML (`results/report/<chain_id>_report.html`): 4 parts
 1. Input Sequence Display
 2. Selected Enzymes
 3. Table of cutting points in the sequence
 4. The mapping diagram of the cleavage sites of the selected enzymes and chemical substances on your sequence
+
+Note: `<chain_id>` is the first token in the FASTA header (the accession). If missing,
+`User_Sequence` is used.
+When a FASTA contains multiple records, each record is processed independently
+and produces its own HTML/CSV outputs.
 
 ## Enzyme Abbreviations
 

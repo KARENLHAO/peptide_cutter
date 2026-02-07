@@ -96,10 +96,8 @@ def write_result_parts(path: str, parts: List[str]) -> List[Path]:
 
 
 def write_part3_csv(path: str, csv_text: str) -> Path:
-    base = Path(path)
-    out_dir = base.parent if base.suffix else base
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / "result.csv"
+    out_path = Path(path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(csv_text, encoding="utf-8")
     return out_path
 

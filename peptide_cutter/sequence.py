@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 STANDARD_AA = set("ACDEFGHIKLMNPQRSTVWY")
 
@@ -25,6 +25,55 @@ def extract_fasta_header(text: str) -> Tuple[str, str]:
         description = parts[1].strip() if len(parts) > 1 else "N/A"
         return accession, description or "N/A"
     return "User_Sequence", "N/A"
+
+
+def parse_fasta_records(
+    text: str, max_records: int | None = None
+) -> List[Tuple[str, str, str]]:
+    records: List[Tuple[str, str, str]] = []
+    cur_id: str | None = None
+    cur_desc: str = "N/A"
+    cur_seq: List[str] = []
+
+    def push_record() -> None:
+        nonlocal cur_id, cur_desc, cur_seq
+        if cur_id is None:
+            return
+        seq = re.sub(r"[\s\d]+", "", "".join(cur_seq)).upper()
+        records.append((cur_id, cur_desc, seq))
+        cur_id = None
+        cur_desc = "N/A"
+        cur_seq = []
+
+    lines = text.splitlines()
+    for raw in lines:
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith(">"):
+            if cur_id is not None:
+                push_record()
+            if max_records is not None and len(records) >= max_records:
+                raise ValueError(
+                    f"FASTA contains more than {max_records} records."
+                )
+            header = line[1:].strip()
+            if not header:
+                cur_id = "User_Sequence"
+                cur_desc = "N/A"
+            else:
+                parts = header.split(None, 1)
+                cur_id = parts[0] or "User_Sequence"
+                cur_desc = parts[1].strip() if len(parts) > 1 else "N/A"
+        else:
+            if cur_id is None:
+                raise ValueError("FASTA must start with a '>' header line.")
+            cur_seq.append(line)
+
+    if cur_id is not None:
+        push_record()
+
+    return records
 
 
 def validate_sequence(seq: str, strict: bool) -> Tuple[str, Dict]:

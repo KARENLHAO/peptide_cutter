@@ -4,7 +4,6 @@ import argparse
 import sys
 import re
 import shutil
-import os
 from pathlib import Path
 from typing import List
 
@@ -24,7 +23,14 @@ from .utils.merge_part4_txts import (
     render_part4_text_from_rows,
 )
 from .rules import load_rules
-from .sequence import extract_fasta_header, parse_sequence, validate_sequence
+from .sequence import (
+    extract_fasta_header,
+    parse_fasta_records,
+    parse_sequence,
+    validate_sequence,
+)
+
+MAX_FASTA_RECORDS = 10000
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -44,7 +50,7 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument(
         "--out",
         default=".",
-        help="Output directory (default: .).",
+        help="Base output directory (default: .).",
     )
     parser.add_argument(
         "--line-width",
@@ -60,60 +66,64 @@ def main(argv: List[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        text = _load_input_text(args.seq, args.fasta)
-        accession, description = extract_fasta_header(text)
-        seq = parse_sequence(text)
-        seq, meta = validate_sequence(seq, strict=True)
-        meta["accession"] = accession
-        meta["description"] = description
-
-        if not seq:
-            raise ValueError("Sequence is empty after cleaning.")
-
         if not 10 <= args.line_width <= 60:
             raise ValueError("--line-width must be between 10 and 60.")
         rules = load_rules(args.rules)
         selected = _select_enzymes(args.enzymes, rules)
 
-        sites_by_enzyme = find_cleavage_sites(seq, rules, selected)
-        summary = build_summary(selected, sites_by_enzyme)
-        parts = render_result_parts(seq, meta, selected, summary, args.line_width)
+        text = _load_input_text(args.seq, args.fasta)
+        records = _parse_input_records(text)
+        if not records:
+            raise ValueError("No FASTA records found in input.")
 
-        html_out = _resolve_html_out(args.out)
-        txt_base = html_out.with_suffix(".txt")
+        used_output_ids: dict[str, int] = {}
+        for accession, description, raw_seq in records:
+            seq, meta = validate_sequence(raw_seq, strict=True)
+            if not seq:
+                raise ValueError(f"Empty sequence for record: {accession}")
+            meta["accession"] = accession
+            meta["description"] = description
 
-        write_result_parts(str(txt_base), parts)
-        part3_csv = render_part3_csv(summary)
-        write_part3_csv(str(html_out), part3_csv)
-        enzyme_dir = Path("tmp") / "enzyme_txts"
-        rows = [
-            (row["name"], row["sites"])
-            for row in summary["table_rows"]
-            if row["count"] > 0
-        ]
-        generate_enzyme_txts(
-            rows=rows,
-            seq_id=meta.get("accession", "SEQ"),
-            seq=seq,
-            out_dir=enzyme_dir,
-            block_size=args.line_width,
-        )
-        part4_text = render_part4_text_from_rows(
-            rows=rows,
-            seq=seq,
-            block_size=args.line_width,
-        )
-        part4_path = Path("tmp") / "parts_txts" / f"{txt_base.stem}_part4.txt"
-        part4_path.write_text(part4_text, encoding="utf-8")
+            output_id = _reserve_output_id(accession, used_output_ids)
+            sites_by_enzyme = find_cleavage_sites(seq, rules, selected)
+            summary = build_summary(selected, sites_by_enzyme)
+            parts = render_result_parts(seq, meta, selected, summary, args.line_width)
 
-        html = build_html_report(
-            seq=seq,
-            meta=meta,
-            summary=summary,
-            line_width=args.line_width,
-            part4_text=part4_text,
-        )
-        html_out.write_text(html, encoding="utf-8")
+            html_out, csv_out = _resolve_output_paths(args.out, output_id)
+            txt_base = html_out.with_suffix(".txt")
+
+            write_result_parts(str(txt_base), parts)
+            part3_csv = render_part3_csv(summary)
+            write_part3_csv(str(csv_out), part3_csv)
+            enzyme_dir = Path("tmp") / "enzyme_txts" / output_id
+            rows = [
+                (row["name"], row["sites"])
+                for row in summary["table_rows"]
+                if row["count"] > 0
+            ]
+            generate_enzyme_txts(
+                rows=rows,
+                seq_id=meta.get("accession", "SEQ"),
+                seq=seq,
+                out_dir=enzyme_dir,
+                block_size=args.line_width,
+            )
+            part4_text = render_part4_text_from_rows(
+                rows=rows,
+                seq=seq,
+                block_size=args.line_width,
+            )
+            part4_path = Path("tmp") / "parts_txts" / f"{txt_base.stem}_part4.txt"
+            part4_path.write_text(part4_text, encoding="utf-8")
+
+            html = build_html_report(
+                seq=seq,
+                meta=meta,
+                summary=summary,
+                line_width=args.line_width,
+                part4_text=part4_text,
+            )
+            html_out.write_text(html, encoding="utf-8")
 
         if args.cleanup_tmp:
             tmp_dir = Path("tmp")
@@ -134,6 +144,28 @@ def _load_input_text(seq_arg: str | None, fasta_path: str | None) -> str:
     if seq_arg is not None:
         return seq_arg
     raise ValueError("Either --seq or --fasta must be provided.")
+
+
+def _parse_input_records(text: str) -> List[tuple[str, str, str]]:
+    if _looks_like_fasta(text):
+        records = parse_fasta_records(text, max_records=MAX_FASTA_RECORDS)
+        if len(records) > MAX_FASTA_RECORDS:
+            raise ValueError(
+                f"FASTA contains more than {MAX_FASTA_RECORDS} records."
+            )
+        return records
+    accession, description = extract_fasta_header(text)
+    seq = parse_sequence(text)
+    return [(accession, description, seq)]
+
+
+def _looks_like_fasta(text: str) -> bool:
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        return line.startswith(">")
+    return False
 
 
 def _select_enzymes(requested: List[str], rules) -> List[str]:
@@ -198,19 +230,41 @@ def _split_enzymes_args(raw: List[str]) -> List[str]:
     return [item.strip() for item in raw if item.strip()]
 
 
-def _resolve_html_out(out_arg: str) -> Path:
-    if not out_arg:
-        return Path("./report.html")
-    if out_arg.endswith(os.sep) or out_arg in {".", ".."}:
-        out_dir = Path(out_arg)
-        out_dir.mkdir(parents=True, exist_ok=True)
-        return out_dir / "report.html"
-    out_path = Path(out_arg)
-    if out_path.exists() and out_path.is_dir():
-        return out_path / "report.html"
-    if out_path.suffix.lower() != ".html":
-        return out_path.with_suffix(".html")
-    return out_path
+def _resolve_output_paths(out_arg: str, seq_id: str) -> tuple[Path, Path]:
+    base_dir = Path(out_arg or ".")
+    if base_dir.suffix:
+        base_dir = base_dir.parent
+    base_dir.mkdir(parents=True, exist_ok=True)
+    results_dir = base_dir if base_dir.name == "results" else base_dir / "results"
+    report_dir = results_dir / "report"
+    csv_dir = results_dir / "csv"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    csv_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_id = _sanitize_id(seq_id)
+    html_out = report_dir / f"{safe_id}_report.html"
+    csv_out = csv_dir / f"{safe_id}.csv"
+    return html_out, csv_out
+
+
+def _reserve_output_id(seq_id: str, used: dict[str, int]) -> str:
+    base = _sanitize_id(seq_id)
+    if base not in used:
+        used[base] = 1
+        return base
+    used[base] += 1
+    return f"{base}_{used[base]}"
+
+
+def _sanitize_id(value: str) -> str:
+    if not value:
+        return "User_Sequence"
+    cleaned = value.strip()
+    if not cleaned:
+        return "User_Sequence"
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", cleaned)
+    cleaned = cleaned.strip("._-")
+    return cleaned or "User_Sequence"
 
 
 if __name__ == "__main__":

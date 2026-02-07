@@ -13,9 +13,15 @@ from peptide_cutter.utils.merge_part4_txts import (
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="Generate one TXT per enzyme/chemical from result.csv + a single-seq FASTA."
+        description=(
+            "Generate one TXT per enzyme/chemical from a CSV + a single-seq FASTA."
+        )
     )
-    ap.add_argument("--csv", default="result.csv", help="Input CSV path.")
+    ap.add_argument(
+        "--csv",
+        default="results/csv/User_Sequence.csv",
+        help="Input CSV path.",
+    )
     ap.add_argument("--fasta", required=True, help="Input FASTA path (single sequence).")
     ap.add_argument(
         "--outdir",
