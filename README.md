@@ -58,7 +58,7 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 ## Output Files
 
-输出All_in_One.csv，内容为输入序列中的切割点表，内容如下：
+All_in_One.csv output: a table of cleavage sites for the input sequences, as shown below:
 | Chain ID | Name of enzyme                                                 | No. of cleavages | Positions of cleavage sites       |
 | -------- | -------------------------------------------------------------- | ---------------: | --------------------------------- |
 | seq_1    | Arg-C proteinase                                               |                1 | 14                                |
@@ -98,21 +98,21 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 | seq_2    | Trypsin                                                        |                2 | 13, 15                            |
 
 
-说明：
-| 字段                        | 说明                                                                                                                                            |
+Notes:
+| Field                       | Description                                                                                                                                     |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chain ID                    | 序列/链的标识符。  当`Chain ID`出现多次重复的情况时，`Chain ID`后会被添加上_dup1、如：A_dup1，`1`对应就是重复的次数。                           |
-| Name of enzyme              | 蛋白酶/化学试剂名称，用于标识采用哪一种切割规则（例如 `Arg-C proteinase`、`Asp-N endopeptidase`、`BNPS-Skatole`、`CNBr` 等）。                  |
-| No. of cleavages            | 该酶/试剂在对应 `Chain ID` 的序列上预测/统计到的切割次数（= 切割位点数量）。通常应与 `Positions of cleavage sites` 中列出的位点个数一致。       |
-| Positions of cleavage sites | 切割位点在序列中的位置编号列表（以 1 为起点的序列坐标）。多个位点用逗号 + 空格分隔（例如 `2, 4, 7`）；若只有一个位点则为单个数字（例如 `14`）。 |
+| Chain ID                    | Identifier of the sequence/chain. When `Chain ID` appears multiple times, a `_dup1` suffix is appended (e.g., `A_dup1`); the number is the duplicate count. |
+| Name of enzyme              | Name of the protease/chemical reagent, indicating which cleavage rule is applied (e.g., `Arg-C proteinase`, `Asp-N endopeptidase`, `BNPS-Skatole`, `CNBr`). |
+| No. of cleavages            | Number of cleavages predicted/counts for this enzyme on the given `Chain ID` (= number of cleavage sites). It should match the count in `Positions of cleavage sites`. |
+| Positions of cleavage sites | List of cleavage positions in the sequence (1-based coordinates). Multiple positions are comma+space separated (e.g., `2, 4, 7`); a single position is a single number (e.g., `14`). |
 
 
 
-输出All_in_One.html，内容将包含所有链的切割信息，展出如下：  
+All_in_One.html output contains cleavage information for all chains, shown here:  
 [All_in_One.html](https://karenlhao.github.io/peptide_cutter/)
 
 
-输出results.tar.gz，包含所有链的单独csv以及HTML报告结果。
+results.tar.gz contains per-chain CSVs and HTML report outputs for all chains.
 
 ## Enzyme Abbreviations
 
