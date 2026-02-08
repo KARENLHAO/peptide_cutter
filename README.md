@@ -1,3 +1,5 @@
+> Note: If you find a bug or notice an error in the cleavage rules during use, please feel free to submit an issue. I will fix and update it as soon as possible.
+
 # Peptide-Cutter
 Peptide-Cutter is a local, lightweight tool for predicting protease/chemical cleavage sites in protein sequences. It reads raw or FASTA input, applies curated cleavage rules, and generates a clean HTML report plus a CSV table of cutting points. The report is organized into four sections: input sequence display, selected enzymes, cutting table, and cleavage mapping.
 
@@ -107,8 +109,7 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 
 输出All_in_One.html，内容将包含所有链的切割信息，展出如下：
-
-
+[All_in_One.html](https://karenlhao.github.io/peptide_cutter/)
 
 
 输出results.tar.gz，包含所有链的单独csv以及HTML报告结果。
@@ -117,46 +118,46 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 Use these abbreviations with `--enzymes` (quote the string when using `;` in a shell):
 
-| Abbr | Enzyme / Chemical |
-| --- | --- |
-| ArgC | Arg-C proteinase |
-| AspN | Asp-N endopeptidase |
-| AspN+AspGluN | Asp-N endopeptidase + N-terminal Glu |
-| BNPS | BNPS-Skatole |
-| Ch_hi | Chymotrypsin-high specificity (C-term to [FYW], not before P) |
-| Ch_lo | Chymotrypsin-low specificity (C-term to [FYWML], not before P) |
-| Clost | Clostripain (Clostridiopeptidase B) |
-| CNBr | CNBr |
-| HCOOH | Formic acid |
-| GluC | Glutamyl endopeptidase |
-| Hydro | Hydroxylamine (NH2OH) |
-| Iodo | Iodosobenzoic acid |
-| NTCB | NTCB (2-nitro-5-thiocyanobenzoic acid) |
-| LysC | LysC |
-| LysN | LysN |
-| Elast | Neutrophil elastase |
-| Pn1.3 | Pepsin (pH1.3) |
-| Pn2p | Pepsin (pH>2) |
-| Prol | Proline-endopeptidase |
-| ProtK | Proteinase K |
-| Staph | Staphylococcal peptidase I |
-| Therm | Thermolysin |
-| Throm | Thrombin |
-| Tryps | Trypsin |
-| Casp1 | Caspase1 |
-| Casp2 | Caspase2 |
-| Casp3 | Caspase3 |
-| Casp4 | Caspase4 |
-| Casp5 | Caspase5 |
-| Casp6 | Caspase6 |
-| Casp7 | Caspase7 |
-| Casp8 | Caspase8 |
-| Casp9 | Caspase9 |
-| Casp10 | Caspase10 |
-| EK | Enterokinase |
-| FXa | Factor Xa |
-| GzmB | GranzymeB |
-| TEV | Tobacco etch virus protease |
+| Abbr         | Enzyme / Chemical                                              |
+| ------------ | -------------------------------------------------------------- |
+| ArgC         | Arg-C proteinase                                               |
+| AspN         | Asp-N endopeptidase                                            |
+| AspN+AspGluN | Asp-N endopeptidase + N-terminal Glu                           |
+| BNPS         | BNPS-Skatole                                                   |
+| Ch_hi        | Chymotrypsin-high specificity (C-term to [FYW], not before P)  |
+| Ch_lo        | Chymotrypsin-low specificity (C-term to [FYWML], not before P) |
+| Clost        | Clostripain (Clostridiopeptidase B)                            |
+| CNBr         | CNBr                                                           |
+| HCOOH        | Formic acid                                                    |
+| GluC         | Glutamyl endopeptidase                                         |
+| Hydro        | Hydroxylamine (NH2OH)                                          |
+| Iodo         | Iodosobenzoic acid                                             |
+| NTCB         | NTCB (2-nitro-5-thiocyanobenzoic acid)                         |
+| LysC         | LysC                                                           |
+| LysN         | LysN                                                           |
+| Elast        | Neutrophil elastase                                            |
+| Pn1.3        | Pepsin (pH1.3)                                                 |
+| Pn2p         | Pepsin (pH>2)                                                  |
+| Prol         | Proline-endopeptidase                                          |
+| ProtK        | Proteinase K                                                   |
+| Staph        | Staphylococcal peptidase I                                     |
+| Therm        | Thermolysin                                                    |
+| Throm        | Thrombin                                                       |
+| Tryps        | Trypsin                                                        |
+| Casp1        | Caspase1                                                       |
+| Casp2        | Caspase2                                                       |
+| Casp3        | Caspase3                                                       |
+| Casp4        | Caspase4                                                       |
+| Casp5        | Caspase5                                                       |
+| Casp6        | Caspase6                                                       |
+| Casp7        | Caspase7                                                       |
+| Casp8        | Caspase8                                                       |
+| Casp9        | Caspase9                                                       |
+| Casp10       | Caspase10                                                      |
+| EK           | Enterokinase                                                   |
+| FXa          | Factor Xa                                                      |
+| GzmB         | GranzymeB                                                      |
+| TEV          | Tobacco etch virus protease                                    |
 
 
 ## Development
@@ -166,6 +167,7 @@ Run tests:
 ```
 pytest
 ```
+
 
 ## Package Structure
 
