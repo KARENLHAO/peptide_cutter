@@ -108,7 +108,7 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 
 
-输出All_in_One.html，内容将包含所有链的切割信息，展出如下：
+输出All_in_One.html，内容将包含所有链的切割信息，展出如下：  
 [All_in_One.html](https://karenlhao.github.io/peptide_cutter/)
 
 
