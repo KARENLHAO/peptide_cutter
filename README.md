@@ -56,22 +56,62 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 ## Output Files
 
-- CSV (`results/csv/All_in_One.csv`): Merged table of cutting points. The first
-  column is the chain ID.
-- CSV (`results/csv/<chain_id>.csv`): Per-chain table of cutting points.
-- HTML (`results/report/All_in_One.html`): Single-page report with a directory of chains
-  and in-page jump links to each chain section.
-- HTML (`results/report/<chain_id>_report.html`): 4 parts
-1. Input Sequence Display
-2. Selected Enzymes
-3. Table of cutting points in the sequence
-4. The mapping diagram of the cleavage sites of the selected enzymes and chemical substances on your sequence
+输出All_in_One.csv，内容为输入序列中的切割点表，内容如下：
+| Chain ID | Name of enzyme                                                 | No. of cleavages | Positions of cleavage sites       |
+| -------- | -------------------------------------------------------------- | ---------------: | --------------------------------- |
+| seq_1    | Arg-C proteinase                                               |                1 | 14                                |
+| seq_1    | Asp-N endopeptidase                                            |                1 | 2                                 |
+| seq_1    | Asp-N endopeptidase + N-terminal Glu                           |                2 | 2, 6                              |
+| seq_1    | BNPS-Skatole                                                   |                1 | 4                                 |
+| seq_1    | Chymotrypsin-high specificity (C-term to [FYW], not before P)  |                1 | 4                                 |
+| seq_1    | Chymotrypsin-low specificity (C-term to [FYWML], not before P) |                2 | 4, 6                              |
+| seq_1    | Clostripain (Clostridiopeptidase B)                            |                1 | 14                                |
+| seq_1    | Formic acid                                                    |                1 | 3                                 |
+| seq_1    | Glutamyl endopeptidase                                         |                1 | 7                                 |
+| seq_1    | Iodosobenzoic acid                                             |                1 | 4                                 |
+| seq_1    | LysC                                                           |                1 | 1                                 |
+| seq_1    | Neutrophil elastase                                            |                1 | 13                                |
+| seq_1    | NTCB (2-nitro-5-thiocyanobenzoic acid)                         |                1 | 4                                 |
+| seq_1    | Pepsin (pH>2)                                                  |                1 | 4                                 |
+| seq_1    | Proteinase K                                                   |                5 | 2, 4, 7, 8, 13                    |
+| seq_1    | Staphylococcal peptidase I                                     |                1 | 7                                 |
+| seq_1    | Thermolysin                                                    |                2 | 1, 12                             |
+| seq_1    | Trypsin                                                        |                1 | 1                                 |
+| seq_2    | Asp-N endopeptidase + N-terminal Glu                           |                3 | 2, 11, 17                         |
+| seq_2    | BNPS-Skatole                                                   |                2 | 2, 16                             |
+| seq_2    | Chymotrypsin-high specificity (C-term to [FYW], not before P)  |                5 | 2, 5, 11, 16, 17                  |
+| seq_2    | Chymotrypsin-low specificity (C-term to [FYWML], not before P) |                9 | 1, 2, 5, 6, 9, 10, 11, 16, 17     |
+| seq_2    | CNBr                                                           |                1 | 6                                 |
+| seq_2    | Glutamyl endopeptidase                                         |                3 | 3, 12, 18                         |
+| seq_2    | Iodosobenzoic acid                                             |                2 | 2, 16                             |
+| seq_2    | LysC                                                           |                2 | 13, 15                            |
+| seq_2    | LysN                                                           |                2 | 12, 14                            |
+| seq_2    | Neutrophil elastase                                            |                1 | 4                                 |
+| seq_2    | NTCB (2-nitro-5-thiocyanobenzoic acid)                         |                1 | 13                                |
+| seq_2    | Pepsin (pH1.3)                                                 |                3 | 4, 5, 10                          |
+| seq_2    | Pepsin (pH>2)                                                  |                4 | 4, 5, 10, 16                      |
+| seq_2    | Proteinase K                                                   |               10 | 1, 2, 3, 4, 5, 11, 12, 16, 17, 18 |
+| seq_2    | Staphylococcal peptidase I                                     |                3 | 3, 12, 18                         |
+| seq_2    | Thermolysin                                                    |                3 | 4, 5, 10                          |
+| seq_2    | Trypsin                                                        |                2 | 13, 15                            |
 
-Note: `<chain_id>` is the first token in the FASTA header (the accession). If missing,
-`User_Sequence` is used. When duplicate chain IDs are present, suffixes like
-`_dup1`, `_dup2` are appended (dup count = repeat index).
-When a FASTA contains multiple records, each record is processed independently
-and produces its own HTML output; a merged HTML index is also generated. The CSV is merged.
+
+说明：
+| 字段                        | 说明                                                                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain ID                    | 序列/链的标识符。  当`Chain ID`出现多次重复的情况时，`Chain ID`后会被添加上_dup1、如：A_dup1，`1`对应就是重复的次数。                           |
+| Name of enzyme              | 蛋白酶/化学试剂名称，用于标识采用哪一种切割规则（例如 `Arg-C proteinase`、`Asp-N endopeptidase`、`BNPS-Skatole`、`CNBr` 等）。                  |
+| No. of cleavages            | 该酶/试剂在对应 `Chain ID` 的序列上预测/统计到的切割次数（= 切割位点数量）。通常应与 `Positions of cleavage sites` 中列出的位点个数一致。       |
+| Positions of cleavage sites | 切割位点在序列中的位置编号列表（以 1 为起点的序列坐标）。多个位点用逗号 + 空格分隔（例如 `2, 4, 7`）；若只有一个位点则为单个数字（例如 `14`）。 |
+
+
+
+输出All_in_One.html，内容将包含所有链的切割信息，展出如下：
+
+
+
+
+输出results.tar.gz，包含所有链的单独csv以及HTML报告结果。
 
 ## Enzyme Abbreviations
 
