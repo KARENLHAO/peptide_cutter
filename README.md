@@ -47,7 +47,6 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
 - `--out`: base output directory (default `.`). A `results/` folder is created
   under this directory with `report/` and `csv/` subfolders.
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
-- `--csv-name`: merged CSV file name (default `All_in_One.csv`).
 - `--cleanup-tmp`: remove the `tmp/` directory after the run completes.
 - `--tar-results`: package the `results/` directory into `results.tar.gz`.
 

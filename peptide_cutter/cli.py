@@ -61,11 +61,6 @@ def main(argv: List[str] | None = None) -> int:
         help="Line width for sequence display and Part 4 blocks (10-60).",
     )
     parser.add_argument(
-        "--csv-name",
-        default=MERGED_CSV_NAME,
-        help="Merged CSV file name (default: All_in_One.csv).",
-    )
-    parser.add_argument(
         "--cleanup-tmp",
         action="store_true",
         help="Remove the tmp directory after the run completes.",
@@ -164,7 +159,7 @@ def main(argv: List[str] | None = None) -> int:
         merged_outputs: List[Path] = []
         if merged_csv_parts:
             merged_csv_text = "".join(merged_csv_parts)
-            merged_csv_path = csv_dir / _ensure_csv_name(args.csv_name)
+            merged_csv_path = csv_dir / MERGED_CSV_NAME
             write_part3_csv(str(merged_csv_path), merged_csv_text)
             merged_outputs.append(merged_csv_path)
         if merged_records:
@@ -328,15 +323,6 @@ def _sanitize_id(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", cleaned)
     cleaned = cleaned.strip("._-")
     return cleaned or "User_Sequence"
-
-
-def _ensure_csv_name(name: str) -> str:
-    cleaned = (name or "").strip()
-    if not cleaned:
-        return MERGED_CSV_NAME
-    if not cleaned.lower().endswith(".csv"):
-        cleaned = f"{cleaned}.csv"
-    return cleaned
 
 
 def _copy_to_cwd(paths: List[Path]) -> None:
