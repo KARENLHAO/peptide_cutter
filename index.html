@@ -1,0 +1,2390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PeptideCutter Report</title>
+  <style>
+:root {
+  --ink: #1b1f24;
+  --muted: #5b6069;
+  --accent: #e07a2f;
+  --accent-2: #1f6d64;
+  --accent-3: #2b3a50;
+  --bg: #f2efe8;
+  --panel: #fbf8f2;
+  --border: #e3d9cc;
+  --shadow: 0 18px 45px rgba(25, 24, 20, 0.12);
+  --serif: "Baskerville", "Palatino", "Times New Roman", serif;
+  --sans: "Futura", "Gill Sans", "Optima", "Trebuchet MS", sans-serif;
+  --mono: "IBM Plex Mono", "SF Mono", "Menlo", "Consolas", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--serif);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(224, 122, 47, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgba(31, 109, 100, 0.12), transparent 50%),
+    linear-gradient(140deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.84)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.04),
+      rgba(0, 0, 0, 0.04) 1px,
+      transparent 1px,
+      transparent 28px
+    );
+  z-index: -2;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03),
+    rgba(0, 0, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 60px
+  );
+  opacity: 0.6;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.report {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 44px 24px 90px;
+  position: relative;
+}
+
+.report::before {
+  content: "";
+  position: absolute;
+  top: 28px;
+  bottom: 28px;
+  left: 16px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(224, 122, 47, 0.8), rgba(31, 109, 100, 0.7));
+  opacity: 0.8;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 12px;
+  background: #fff;
+  color: var(--ink);
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  font-family: var(--sans);
+  text-decoration: none;
+  z-index: 10;
+}
+
+.skip-link:focus {
+  left: 16px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.back-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 109, 100, 0.35);
+  background: rgba(31, 109, 100, 0.08);
+  color: var(--accent-3);
+  text-decoration: none;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.hero {
+  padding: 30px 36px 26px;
+  border-radius: 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 160px;
+  height: 160px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, rgba(31, 109, 100, 0.16), transparent);
+  transform: rotate(12deg);
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  color: var(--accent-2);
+}
+
+.hero-badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed rgba(31, 109, 100, 0.45);
+  background: rgba(31, 109, 100, 0.08);
+}
+
+h1 {
+  font-family: var(--sans);
+  font-size: 2.5rem;
+  margin: 12px 0 10px;
+  letter-spacing: 0.02em;
+  color: var(--accent-3);
+}
+
+.subtitle {
+  color: var(--muted);
+  margin: 0 0 18px;
+  font-size: 1.02rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.meta-card {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fffdf9;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.meta-card strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.hero-panel {
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(224, 122, 47, 0.24);
+  background: linear-gradient(160deg, rgba(224, 122, 47, 0.12), rgba(255, 255, 255, 0.85));
+  font-family: var(--sans);
+  color: var(--ink);
+}
+
+.hero-panel p {
+  margin: 0 0 12px;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav a {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-size: 0.82rem;
+  text-decoration: none;
+  color: var(--accent-3);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.nav a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+section {
+  margin-top: 30px;
+  padding: 26px 28px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 12px 26px rgba(25, 24, 20, 0.08);
+  position: relative;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-title .tag {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  border-bottom: 2px solid var(--accent-2);
+  padding-bottom: 4px;
+}
+
+.section-title .title {
+  font-family: var(--sans);
+  font-size: 1.4rem;
+  color: var(--accent-3);
+  letter-spacing: 0.01em;
+}
+
+p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.sequence pre,
+.tracks pre {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 18px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+}
+
+.tracks pre {
+  background: #0f1d1c;
+  color: #f5efe6;
+  border: 1px solid rgba(31, 109, 100, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.enzyme-list {
+  columns: 2;
+  column-gap: 30px;
+  padding-left: 18px;
+  margin: 12px 0 0;
+  font-family: var(--sans);
+  color: var(--ink);
+}
+
+.enzyme-list li {
+  break-inside: avoid;
+  margin-bottom: 6px;
+}
+
+.note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(224, 122, 47, 0.35);
+  background: rgba(224, 122, 47, 0.12);
+  font-family: var(--sans);
+  color: var(--accent-3);
+}
+
+.note a {
+  color: var(--accent-3);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 14px;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  background: #fbfaf7;
+  border: 1px solid #d9d6cf;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+thead {
+  background: #dfe7e4;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e1ddd7;
+}
+
+tbody tr:nth-child(even) {
+  background: #f3f0ec;
+}
+
+.notice {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-left: 4px solid #2b6d64;
+  background: #dfe7e4;
+  border-radius: 8px;
+  font-family: var(--sans);
+  color: #1f2c35;
+}
+
+footer {
+  margin-top: 34px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 980px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .enzyme-list {
+    columns: 1;
+  }
+}
+
+.hero-grid {
+  grid-template-columns: 1fr;
+  margin-top: 26px;
+}
+
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.title-row h1 {
+  margin: 0;
+}
+
+.total-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fff4e6 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(224, 122, 47, 0.3);
+  padding: 8px 12px;
+  font-family: var(--sans);
+  box-shadow:
+    0 14px 30px rgba(27, 31, 36, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  min-width: 160px;
+  text-align: right;
+  position: relative;
+  overflow: hidden;
+}
+
+.total-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 15% 20%, rgba(31, 109, 100, 0.18), transparent 55%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.total-card strong {
+  display: block;
+  color: var(--accent-3);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 4px;
+}
+
+.total-card span {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  position: relative;
+  z-index: 1;
+}
+
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.toc-hint {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.toc-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ec 100%);
+  text-decoration: none;
+  color: var(--ink);
+  font-family: var(--sans);
+  box-shadow: 0 10px 24px rgba(27, 31, 36, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+
+.toc-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 10% 10%, rgba(224, 122, 47, 0.12), transparent 50%),
+    radial-gradient(circle at 90% 0%, rgba(31, 109, 100, 0.15), transparent 55%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.toc-name {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  z-index: 1;
+}
+
+.toc-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  z-index: 1;
+}
+
+.toc-arrow {
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent-2);
+  z-index: 1;
+}
+
+.toc-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 16px 30px rgba(27, 31, 36, 0.12);
+}
+
+.chain-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.chain-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.chain-subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-family: var(--sans);
+}
+
+.chain-block {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.chain-footer {
+  margin-top: 18px;
+  text-align: right;
+  font-family: var(--sans);
+}
+
+.chain-footer a {
+  color: var(--accent-2);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .toc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="report" id="top">
+  <header class="hero">
+    <div class="hero-top">
+      <div>PeptideCutter</div>
+      <div class="hero-badge">Sequence Digest</div>
+    </div>
+    <div class="title-row">
+      <h1>PeptideCutter Report</h1>
+      <div class="total-card"><strong>Total Chains</strong><span>19</span></div>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-panel">
+        <p class="toc-hint">Click a chain name to jump to its detailed report section.</p>
+        <div class="toc-grid">
+          <a href="#seq-1" class="toc-item">
+  <div class="toc-name">seq_1</div>
+  <div class="toc-meta">14 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-2" class="toc-item">
+  <div class="toc-name">seq_2</div>
+  <div class="toc-meta">18 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-3" class="toc-item">
+  <div class="toc-name">seq_3</div>
+  <div class="toc-meta">12 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-4" class="toc-item">
+  <div class="toc-name">seq_4</div>
+  <div class="toc-meta">14 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-5" class="toc-item">
+  <div class="toc-name">seq_5</div>
+  <div class="toc-meta">12 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-6" class="toc-item">
+  <div class="toc-name">seq_6</div>
+  <div class="toc-meta">13 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-7" class="toc-item">
+  <div class="toc-name">seq_7</div>
+  <div class="toc-meta">13 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-8" class="toc-item">
+  <div class="toc-name">seq_8</div>
+  <div class="toc-meta">15 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-9" class="toc-item">
+  <div class="toc-name">seq_9</div>
+  <div class="toc-meta">15 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-10" class="toc-item">
+  <div class="toc-name">seq_10</div>
+  <div class="toc-meta">15 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-11" class="toc-item">
+  <div class="toc-name">seq_11</div>
+  <div class="toc-meta">10 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-12" class="toc-item">
+  <div class="toc-name">seq_12</div>
+  <div class="toc-meta">13 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-13" class="toc-item">
+  <div class="toc-name">seq_13</div>
+  <div class="toc-meta">14 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-14" class="toc-item">
+  <div class="toc-name">seq_14</div>
+  <div class="toc-meta">19 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-15" class="toc-item">
+  <div class="toc-name">seq_15</div>
+  <div class="toc-meta">11 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-16" class="toc-item">
+  <div class="toc-name">seq_16</div>
+  <div class="toc-meta">15 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-17" class="toc-item">
+  <div class="toc-name">seq_17</div>
+  <div class="toc-meta">14 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-18" class="toc-item">
+  <div class="toc-name">seq_18</div>
+  <div class="toc-meta">16 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+<a href="#seq-19" class="toc-item">
+  <div class="toc-name">seq_19</div>
+  <div class="toc-meta">16 aa · 38 enzymes</div>
+  <div class="toc-arrow">&gt;</div>
+</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="content">
+    
+    <section id="seq-1" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_1</h2>
+          <p class="chain-subtitle">Length 14 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-1-part1">Part 1</a>
+          <a href="#seq-1-part2">Part 2</a>
+          <a href="#seq-1-part3">Part 3</a>
+          <a href="#seq-1-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-1-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 KIDWCHEIQPSSVR</code></pre>
+      </div>
+
+      <div id="seq-1-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-1-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>14</td></tr><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>2</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>2, 6</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>4</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>4</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>2</td><td>4, 6</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>14</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>3</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>1</td><td>7</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>4</td></tr><tr><th scope="row">LysC</th><td>1</td><td>1</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>13</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>4</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>1</td><td>4</td></tr><tr><th scope="row">Proteinase K</th><td>5</td><td>2, 4, 7, 8, 13</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>1</td><td>7</td></tr><tr><th scope="row">Thermolysin</th><td>2</td><td>1, 12</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>1</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, CNBr, Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), LysN, Pepsin (pH1.3), Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-1-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                          ArgC_Clost|
+                                        Elast_ProtK||
+                                             Therm|||
+                                         ProtK|   |||
+                             GluC_ProtK_Staph||   |||
+                          AspN_AspGluN_Ch_lo|||   |||
+     BNPS_Ch_hi_Ch_lo_Iodo_NTCB_Pn2p_ProtK| |||   |||
+                                    HCOOH|| |||   |||
+                 AspN_AspN_AspGluN_ProtK||| |||   |||
+                       LysC_Therm_Tryps|||| |||   |||
+                                       KIDWCHEIQPSSVR
+                                   1   ---------+----   14</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-2" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_2</h2>
+          <p class="chain-subtitle">Length 18 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-2-part1">Part 1</a>
+          <a href="#seq-2-part2">Part 2</a>
+          <a href="#seq-2-part3">Part 3</a>
+          <a href="#seq-2-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-2-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 LWEAFMSPHHFEKCKWYE</code></pre>
+      </div>
+
+      <div id="seq-2-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-2-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>3</td><td>2, 11, 17</td></tr><tr><th scope="row">BNPS-Skatole</th><td>2</td><td>2, 16</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>5</td><td>2, 5, 11, 16, 17</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>9</td><td>1, 2, 5, 6, 9, 10, 11, 16, 17</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>6</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>3</td><td>3, 12, 18</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>2</td><td>2, 16</td></tr><tr><th scope="row">LysC</th><td>2</td><td>13, 15</td></tr><tr><th scope="row">LysN</th><td>2</td><td>12, 14</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>4</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>13</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>3</td><td>4, 5, 10</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>4</td><td>4, 5, 10, 16</td></tr><tr><th scope="row">Proteinase K</th><td>10</td><td>1, 2, 3, 4, 5, 11, 12, 16, 17, 18</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>3</td><td>3, 12, 18</td></tr><tr><th scope="row">Thermolysin</th><td>3</td><td>4, 5, 10</td></tr><tr><th scope="row">Trypsin</th><td>2</td><td>13, 15</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, Asp-N endopeptidase, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), Enterokinase, Factor Xa, Formic acid, GranzymeB, Hydroxylamine (NH2OH), Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-2-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                           GluC_ProtK_Staph|
+                            AspN_AspGluN_Ch_hi_Ch_lo_ProtK||
+                         BNPS_Ch_hi_Ch_lo_Iodo_Pn2p_ProtK|||
+                                              LysC_Tryps||||
+                                                   LysN|||||
+                                       LysC_NTCB_Tryps||||||
+                                GluC_LysN_ProtK_Staph|||||||
+                      AspN_AspGluN_Ch_hi_Ch_lo_ProtK||||||||
+                             Ch_lo_Pn1.3_Pn2p_Therm|||||||||
+                                             Ch_lo||||||||||
+                                     Ch_lo_CNBr|  ||||||||||
+            Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK_Therm||  ||||||||||
+                 Elast_Pn1.3_Pn2p_ProtK_Therm|||  ||||||||||
+                            GluC_ProtK_Staph||||  ||||||||||
+   AspN_AspGluN_BNPS_Ch_hi_Ch_lo_Iodo_ProtK|||||  ||||||||||
+                               Ch_lo_ProtK||||||  ||||||||||
+                                          LWEAFMSPHHFEKCKWYE
+                                      1   ---------+--------   18</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-3" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_3</h2>
+          <p class="chain-subtitle">Length 12 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-3-part1">Part 1</a>
+          <a href="#seq-3-part2">Part 2</a>
+          <a href="#seq-3-part3">Part 3</a>
+          <a href="#seq-3-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-3-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 SAFDKCTKAYNK</code></pre>
+      </div>
+
+      <div id="seq-3-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-3-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>3</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>1</td><td>3</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>2</td><td>3, 10</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>2</td><td>3, 10</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>4</td></tr><tr><th scope="row">LysC</th><td>3</td><td>5, 8, 12</td></tr><tr><th scope="row">LysN</th><td>3</td><td>4, 7, 11</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>2, 9</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>5</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>1</td><td>3</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>2</td><td>3, 9</td></tr><tr><th scope="row">Proteinase K</th><td>5</td><td>2, 3, 7, 9, 10</td></tr><tr><th scope="row">Thermolysin</th><td>3</td><td>1, 2, 8</td></tr><tr><th scope="row">Trypsin</th><td>2</td><td>5, 8</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), CNBr, Enterokinase, Factor Xa, Glutamyl endopeptidase, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, Proline-endopeptidase[*], Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-3-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                                       LysC|
+                                                      LysN||
+                                        Ch_hi_Ch_lo_ProtK|||
+                                        Elast_Pn2p_ProtK||||
+                                       LysC_Therm_Tryps|||||
+                                            LysN_ProtK||||||
+                                     LysC_NTCB_Tryps| ||||||
+                                         HCOOH_LysN|| ||||||
+    AspN_AspN_AspGluN_Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK||| ||||||
+                                Elast_ProtK_Therm|||| ||||||
+                                           Therm||||| ||||||
+                                                SAFDKCTKAYNK
+                                            1   ---------+--   12</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-4" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_4</h2>
+          <p class="chain-subtitle">Length 14 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-4-part1">Part 1</a>
+          <a href="#seq-4-part2">Part 2</a>
+          <a href="#seq-4-part3">Part 3</a>
+          <a href="#seq-4-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-4-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 SHQTTHPWMWKNAN</code></pre>
+      </div>
+
+      <div id="seq-4-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-4-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">BNPS-Skatole</th><td>2</td><td>8, 10</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>10</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>3</td><td>2, 9, 10</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>9</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>2</td><td>8, 10</td></tr><tr><th scope="row">LysC</th><td>1</td><td>11</td></tr><tr><th scope="row">LysN</th><td>1</td><td>10</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>13</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>3</td><td>7, 9, 10</td></tr><tr><th scope="row">Proline-endopeptidase[*]</th><td>1</td><td>7</td></tr><tr><th scope="row">Proteinase K</th><td>5</td><td>4, 5, 8, 10, 13</td></tr><tr><th scope="row">Thermolysin</th><td>2</td><td>8, 12</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>11</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, Asp-N endopeptidase, Asp-N endopeptidase + N-terminal Glu, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), Enterokinase, Factor Xa, Formic acid, Glutamyl endopeptidase, GranzymeB, Hydroxylamine (NH2OH), NTCB (2-nitro-5-thiocyanobenzoic acid), Pepsin (pH1.3), Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-4-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                        Elast_ProtK|
+                                             Therm||
+                                       LysC_Tryps|||
+           BNPS_Ch_hi_Ch_lo_Iodo_LysN_Pn2p_ProtK||||
+                                Ch_lo_CNBr_Pn2p|||||
+                         BNPS_Iodo_ProtK_Therm||||||
+                                    Pn2p_Prol|||||||
+                                      ProtK| |||||||
+                                     ProtK|| |||||||
+                                   Ch_lo| || |||||||
+                                       SHQTTHPWMWKNAN
+                                   1   ---------+----   14</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-5" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_5</h2>
+          <p class="chain-subtitle">Length 12 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-5-part1">Part 1</a>
+          <a href="#seq-5-part2">Part 2</a>
+          <a href="#seq-5-part3">Part 3</a>
+          <a href="#seq-5-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-5-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 PFFWIILKHNTP</code></pre>
+      </div>
+
+      <div id="seq-5-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-5-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>4</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>3</td><td>2, 3, 4</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>5</td><td>2, 3, 4, 7, 9</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>4</td></tr><tr><th scope="row">LysC</th><td>1</td><td>8</td></tr><tr><th scope="row">LysN</th><td>1</td><td>7</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>3</td><td>3, 6, 7</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>4</td><td>3, 4, 6, 7</td></tr><tr><th scope="row">Proteinase K</th><td>7</td><td>2, 3, 4, 5, 6, 7, 11</td></tr><tr><th scope="row">Thermolysin</th><td>5</td><td>1, 2, 4, 5, 6</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>8</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, Asp-N endopeptidase, Asp-N endopeptidase + N-terminal Glu, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), CNBr, Enterokinase, Factor Xa, Formic acid, Glutamyl endopeptidase, GranzymeB, Hydroxylamine (NH2OH), Neutrophil elastase, NTCB (2-nitro-5-thiocyanobenzoic acid), Proline-endopeptidase[*], Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-5-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                             ProtK|
+                                           Ch_lo| |
+                                     LysC_Tryps|| |
+                   Ch_lo_LysN_Pn1.3_Pn2p_ProtK||| |
+                       Pn1.3_Pn2p_ProtK_Therm|||| |
+                                 ProtK_Therm||||| |
+     BNPS_Ch_hi_Ch_lo_Iodo_Pn2p_ProtK_Therm|||||| |
+              Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK||||||| |
+                  Ch_hi_Ch_lo_ProtK_Therm|||||||| |
+                                   Therm||||||||| |
+                                        PFFWIILKHNTP
+                                    1   ---------+--   12</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-6" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_6</h2>
+          <p class="chain-subtitle">Length 13 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-6-part1">Part 1</a>
+          <a href="#seq-6-part2">Part 2</a>
+          <a href="#seq-6-part3">Part 3</a>
+          <a href="#seq-6-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-6-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 MQARHTDQWDTKS</code></pre>
+      </div>
+
+      <div id="seq-6-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-6-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>4</td></tr><tr><th scope="row">Asp-N endopeptidase</th><td>2</td><td>6, 9</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>6, 9</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>9</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>9</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>3</td><td>1, 5, 9</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>4</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>1</td></tr><tr><th scope="row">Formic acid</th><td>2</td><td>7, 10</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>9</td></tr><tr><th scope="row">LysC</th><td>1</td><td>12</td></tr><tr><th scope="row">LysN</th><td>1</td><td>11</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>3</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>2</td><td>8, 9</td></tr><tr><th scope="row">Proteinase K</th><td>4</td><td>3, 6, 9, 11</td></tr><tr><th scope="row">Thermolysin</th><td>1</td><td>2</td></tr><tr><th scope="row">Trypsin</th><td>2</td><td>4, 12</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Enterokinase, Factor Xa, Glutamyl endopeptidase, GranzymeB, Hydroxylamine (NH2OH), NTCB (2-nitro-5-thiocyanobenzoic acid), Pepsin (pH1.3), Proline-endopeptidase[*], Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-6-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                                     LysC_Tryps|
+                                                    LysN_ProtK||
+                                                        HCOOH|||
+          AspN_AspN_AspGluN_BNPS_Ch_hi_Ch_lo_Iodo_Pn2p_ProtK||||
+                                                       Pn2p|||||
+                                                     HCOOH||||||
+                                  AspN_AspN_AspGluN_ProtK|||||||
+                                                   Ch_lo||||||||
+                                       ArgC_Clost_Tryps|||||||||
+                                           Elast_ProtK||||||||||
+                                                Therm|||||||||||
+                                          Ch_lo_CNBr||||||||||||
+                                                    MQARHTDQWDTKS
+                                                1   ---------+---   13</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-7" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_7</h2>
+          <p class="chain-subtitle">Length 13 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-7-part1">Part 1</a>
+          <a href="#seq-7-part2">Part 2</a>
+          <a href="#seq-7-part3">Part 3</a>
+          <a href="#seq-7-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-7-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 GQELGYLELHLID</code></pre>
+      </div>
+
+      <div id="seq-7-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-7-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>12</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>3</td><td>2, 7, 12</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>6</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>6</td><td>4, 6, 7, 9, 10, 11</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>13</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>2</td><td>3, 8</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>8</td><td>3, 4, 6, 7, 8, 9, 10, 11</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>9</td><td>3, 4, 5, 6, 7, 8, 9, 10, 11</td></tr><tr><th scope="row">Proteinase K</th><td>8</td><td>3, 4, 6, 7, 8, 9, 11, 12</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>2</td><td>3, 8</td></tr><tr><th scope="row">Thermolysin</th><td>3</td><td>6, 10, 11</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), CNBr, Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, LysC, LysN, Neutrophil elastase, NTCB (2-nitro-5-thiocyanobenzoic acid), Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease, Trypsin</div>
+      </div>
+
+      <div id="seq-7-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                            HCOOH|
+                         AspN_AspN_AspGluN_ProtK||
+                   Ch_lo_Pn1.3_Pn2p_ProtK_Therm|||
+                        Ch_lo_Pn1.3_Pn2p_Therm||||
+                       Ch_lo_Pn1.3_Pn2p_ProtK|||||
+                 GluC_Pn1.3_Pn2p_ProtK_Staph||||||
+        AspN_AspGluN_Ch_lo_Pn1.3_Pn2p_ProtK|||||||
+        Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK_Therm||||||||
+                                     Pn2p|||||||||
+                  Ch_lo_Pn1.3_Pn2p_ProtK||||||||||
+            GluC_Pn1.3_Pn2p_ProtK_Staph|||||||||||
+                          AspN_AspGluN||||||||||||
+                                     GQELGYLELHLID
+                                 1   ---------+---   13</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-8" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_8</h2>
+          <p class="chain-subtitle">Length 15 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-8-part1">Part 1</a>
+          <a href="#seq-8-part2">Part 2</a>
+          <a href="#seq-8-part3">Part 3</a>
+          <a href="#seq-8-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-8-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 EPPRVKRYIEIQCLD</code></pre>
+      </div>
+
+      <div id="seq-8-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-8-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>2</td><td>4, 7</td></tr><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>14</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>9, 14</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>8</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>2</td><td>8, 14</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>2</td><td>4, 7</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>15</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>2</td><td>1, 10</td></tr><tr><th scope="row">LysC</th><td>1</td><td>6</td></tr><tr><th scope="row">LysN</th><td>1</td><td>5</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>5</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>12</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>1</td><td>13</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>1</td><td>13</td></tr><tr><th scope="row">Proteinase K</th><td>7</td><td>1, 5, 8, 9, 10, 11, 14</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>1</td><td>10</td></tr><tr><th scope="row">Thermolysin</th><td>3</td><td>4, 8, 13</td></tr><tr><th scope="row">Trypsin</th><td>3</td><td>4, 6, 7</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, CNBr, Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-8-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                        HCOOH|
+               AspN_AspN_AspGluN_Ch_lo_ProtK||
+                           Pn1.3_Pn2p_Therm|||
+                                      NTCB||||
+                                    ProtK|||||
+                        GluC_ProtK_Staph||||||
+                     AspN_AspGluN_ProtK|||||||
+               Ch_hi_Ch_lo_ProtK_Therm||||||||
+                     ArgC_Clost_Tryps|||||||||
+                          LysC_Tryps||||||||||
+                   LysN_Elast_ProtK|||||||||||
+            ArgC_Clost_Therm_Tryps||||||||||||
+                     GluC_ProtK|  ||||||||||||
+                               EPPRVKRYIEIQCLD
+                           1   ---------+-----   15</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-9" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_9</h2>
+          <p class="chain-subtitle">Length 15 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-9-part1">Part 1</a>
+          <a href="#seq-9-part2">Part 2</a>
+          <a href="#seq-9-part3">Part 3</a>
+          <a href="#seq-9-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-9-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 RMMPRQNVGHAAQNH</code></pre>
+      </div>
+
+      <div id="seq-9-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-9-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>2</td><td>1, 5</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>2</td><td>2, 10</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>2</td><td>1, 5</td></tr><tr><th scope="row">CNBr</th><td>2</td><td>2, 3</td></tr><tr><th scope="row">Neutrophil elastase</th><td>3</td><td>8, 11, 12</td></tr><tr><th scope="row">Proteinase K</th><td>3</td><td>8, 11, 12</td></tr><tr><th scope="row">Thermolysin</th><td>4</td><td>1, 7, 10, 11</td></tr><tr><th scope="row">Trypsin</th><td>2</td><td>1, 5</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Asp-N endopeptidase, Asp-N endopeptidase + N-terminal Glu, BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Chymotrypsin-high specificity (C-term to [FYW], not before P), Enterokinase, Factor Xa, Formic acid, Glutamyl endopeptidase, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, LysC, LysN, NTCB (2-nitro-5-thiocyanobenzoic acid), Pepsin (pH1.3), Pepsin (pH&gt;2), Proline-endopeptidase[*], Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-9-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                        Elast_ProtK|
+                 Elast_ProtK_Therm||
+                      Ch_lo_Therm|||
+                    Elast_ProtK| |||
+                         Therm|| |||
+            ArgC_Clost_Tryps| || |||
+                      CNBr| | || |||
+               Ch_lo_CNBr|| | || |||
+  ArgC_Clost_Therm_Tryps||| | || |||
+                        RMMPRQNVGHAAQNH
+                    1   ---------+-----   15</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-10" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_10</h2>
+          <p class="chain-subtitle">Length 15 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-10-part1">Part 1</a>
+          <a href="#seq-10-part2">Part 2</a>
+          <a href="#seq-10-part3">Part 3</a>
+          <a href="#seq-10-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-10-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 DYRNGVPKCADANCK</code></pre>
+      </div>
+
+      <div id="seq-10-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-10-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>3</td></tr><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>10</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>1</td><td>10</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>2</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>1</td><td>2</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>3</td></tr><tr><th scope="row">Formic acid</th><td>2</td><td>1, 11</td></tr><tr><th scope="row">Hydroxylamine (NH2OH)</th><td>1</td><td>4</td></tr><tr><th scope="row">LysC</th><td>2</td><td>8, 15</td></tr><tr><th scope="row">LysN</th><td>2</td><td>7, 14</td></tr><tr><th scope="row">Neutrophil elastase</th><td>3</td><td>6, 10, 12</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>2</td><td>8, 13</td></tr><tr><th scope="row">Proteinase K</th><td>4</td><td>2, 6, 10, 12</td></tr><tr><th scope="row">Thermolysin</th><td>1</td><td>9</td></tr><tr><th scope="row">Trypsin</th><td>2</td><td>3, 8</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, CNBr, Enterokinase, Factor Xa, Glutamyl endopeptidase, GranzymeB, Iodosobenzoic acid, Pepsin (pH1.3), Pepsin (pH&gt;2), Proline-endopeptidase[*], Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-10-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                         LysC|
+                                        LysN||
+                                       NTCB|||
+                               Elast_ProtK||||
+                                    HCOOH|||||
+           AspN_AspN_AspGluN_Elast_ProtK||||||
+                                  Therm|||||||
+                       LysC_NTCB_Tryps||||||||
+                                 LysN|||||||||
+                         Elast_ProtK||||||||||
+                             Hydro| ||||||||||
+                 ArgC_Clost_Tryps|| ||||||||||
+               Ch_hi_Ch_lo_ProtK||| ||||||||||
+                          HCOOH|||| ||||||||||
+                               DYRNGVPKCADANCK
+                           1   ---------+-----   15</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-11" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_11</h2>
+          <p class="chain-subtitle">Length 10 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-11-part1">Part 1</a>
+          <a href="#seq-11-part2">Part 2</a>
+          <a href="#seq-11-part3">Part 3</a>
+          <a href="#seq-11-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-11-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 HVRYEHWAGI</code></pre>
+      </div>
+
+      <div id="seq-11-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-11-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>3</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>1</td><td>4</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>7</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>2</td><td>4, 7</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>3</td><td>1, 4, 7</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>3</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>1</td><td>5</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>7</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>2, 8</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>3</td><td>4, 6, 7</td></tr><tr><th scope="row">Proteinase K</th><td>6</td><td>2, 4, 5, 7, 8, 10</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>1</td><td>5</td></tr><tr><th scope="row">Thermolysin</th><td>2</td><td>1, 7</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>3</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Asp-N endopeptidase, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, CNBr, Enterokinase, Factor Xa, Formic acid, GranzymeB, Hydroxylamine (NH2OH), LysC, LysN, NTCB (2-nitro-5-thiocyanobenzoic acid), Pepsin (pH1.3), Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-11-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                            ProtK|
+                                    Elast_ProtK| |
+        BNPS_Ch_hi_Ch_lo_Iodo_Pn2p_ProtK_Therm|| |
+                                         Pn2p||| |
+                            GluC_ProtK_Staph|||| |
+        AspN_AspGluN_Ch_hi_Ch_lo_Pn2p_ProtK||||| |
+                          ArgC_Clost_Tryps|||||| |
+                              Elast_ProtK||||||| |
+                             Ch_lo_Therm|||||||| |
+                                        HVRYEHWAGI
+                                    1   ---------+   10</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-12" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_12</h2>
+          <p class="chain-subtitle">Length 13 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-12-part1">Part 1</a>
+          <a href="#seq-12-part2">Part 2</a>
+          <a href="#seq-12-part3">Part 3</a>
+          <a href="#seq-12-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-12-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 FADYDVWHGWQKE</code></pre>
+      </div>
+
+      <div id="seq-12-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-12-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase</th><td>2</td><td>2, 4</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>3</td><td>2, 4, 12</td></tr><tr><th scope="row">BNPS-Skatole</th><td>2</td><td>7, 10</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>4</td><td>1, 4, 7, 10</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>5</td><td>1, 4, 7, 8, 10</td></tr><tr><th scope="row">Formic acid</th><td>2</td><td>3, 5</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>1</td><td>13</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>2</td><td>7, 10</td></tr><tr><th scope="row">LysC</th><td>1</td><td>12</td></tr><tr><th scope="row">LysN</th><td>1</td><td>11</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>2, 6</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>5</td><td>3, 4, 6, 7, 9</td></tr><tr><th scope="row">Proteinase K</th><td>7</td><td>1, 2, 4, 6, 7, 10, 13</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>1</td><td>13</td></tr><tr><th scope="row">Thermolysin</th><td>1</td><td>1</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>12</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), CNBr, Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), NTCB (2-nitro-5-thiocyanobenzoic acid), Pepsin (pH1.3), Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-12-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                      GluC_ProtK_Staph|
+                              AspN_AspGluN_LysC_Tryps||
+                                                LysN|||
+                        BNPS_Ch_hi_Ch_lo_Iodo_ProtK||||
+                                              Pn2p|||||
+                                            Ch_lo||||||
+                BNPS_Ch_hi_Ch_lo_Iodo_Pn2p_ProtK|||||||
+                               Elast_Pn2p_ProtK||||||||
+                                         HCOOH|||||||||
+     AspN_AspN_AspGluN_Ch_hi_Ch_lo_Pn2p_ProtK||||||||||
+                                  HCOOH_Pn2p|||||||||||
+              AspN_AspN_AspGluN_Elast_ProtK||||||||||||
+                   Ch_hi_Ch_lo_ProtK_Therm|||||||||||||
+                                          FADYDVWHGWQKE
+                                      1   ---------+---   13</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-13" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_13</h2>
+          <p class="chain-subtitle">Length 14 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-13-part1">Part 1</a>
+          <a href="#seq-13-part2">Part 2</a>
+          <a href="#seq-13-part3">Part 3</a>
+          <a href="#seq-13-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-13-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 TDGLYWAEMACQLP</code></pre>
+      </div>
+
+      <div id="seq-13-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-13-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>1</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>1, 7</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>6</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>2</td><td>5, 6</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>4</td><td>4, 5, 6, 9</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>9</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>2</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>1</td><td>8</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>6</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>7, 10</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>10</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>2</td><td>3, 4</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>4</td><td>3, 4, 5, 6</td></tr><tr><th scope="row">Proteinase K</th><td>8</td><td>1, 4, 5, 6, 7, 8, 10, 13</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>1</td><td>8</td></tr><tr><th scope="row">Thermolysin</th><td>3</td><td>3, 6, 9</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), LysC, LysN, Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease, Trypsin</div>
+      </div>
+
+      <div id="seq-13-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                               ProtK|
+                                 Elast_NTCB_ProtK|  |
+                                Ch_lo_CNBr_Therm||  |
+                               GluC_ProtK_Staph|||  |
+                      AspN_AspGluN_Elast_ProtK||||  |
+       BNPS_Ch_hi_Ch_lo_Iodo_Pn2p_ProtK_Therm|||||  |
+                      Ch_hi_Ch_lo_Pn2p_ProtK||||||  |
+                     Ch_lo_Pn1.3_Pn2p_ProtK|||||||  |
+                          Pn1.3_Pn2p_Therm||||||||  |
+                                    HCOOH|||||||||  |
+                 AspN_AspN_AspGluN_ProtK||||||||||  |
+                                        TDGLYWAEMACQLP
+                                    1   ---------+----   14</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-14" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_14</h2>
+          <p class="chain-subtitle">Length 19 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-14-part1">Part 1</a>
+          <a href="#seq-14-part2">Part 2</a>
+          <a href="#seq-14-part3">Part 3</a>
+          <a href="#seq-14-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-14-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 KNQYRSDKFWAKPRNEGCE</code></pre>
+      </div>
+
+      <div id="seq-14-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-14-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>2</td><td>5, 14</td></tr><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>6</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>3</td><td>6, 15, 18</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>10</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>3</td><td>4, 9, 10</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>3</td><td>4, 9, 10</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>2</td><td>5, 14</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>7</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>2</td><td>16, 19</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>10</td></tr><tr><th scope="row">LysC</th><td>3</td><td>1, 8, 12</td></tr><tr><th scope="row">LysN</th><td>2</td><td>7, 11</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>11</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>17</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>2</td><td>8, 9</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>3</td><td>4, 8, 9</td></tr><tr><th scope="row">Proline-endopeptidase[*]</th><td>1</td><td>13</td></tr><tr><th scope="row">Proteinase K</th><td>6</td><td>4, 9, 10, 11, 16, 19</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>2</td><td>16, 19</td></tr><tr><th scope="row">Thermolysin</th><td>2</td><td>8, 10</td></tr><tr><th scope="row">Trypsin</th><td>4</td><td>1, 5, 8, 14</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, CNBr, Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-14-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                     GluC_ProtK_Staph|
+                                        AspN_AspGluN||
+                                               NTCB|||
+                                  GluC_ProtK_Staph||||
+                                     AspN_AspGluN|||||
+                                ArgC_Clost_Tryps||||||
+                                           Prol|||||||
+                                          LysC||||||||
+                             LysN_Elast_ProtK|||||||||
+           BNPS_Ch_hi_Ch_lo_Iodo_ProtK_Therm||||||||||
+               Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK|||||||||||
+               LysC_Pn1.3_Pn2p_Therm_Tryps||||||||||||
+                               HCOOH_LysN|||||||||||||
+                       AspN_AspN_AspGluN||||||||||||||
+                       ArgC_Clost_Tryps|||||||||||||||
+                Ch_hi_Ch_lo_Pn2p_ProtK||||||||||||||||
+                         LysC_Tryps|  ||||||||||||||||
+                                   KNQYRSDKFWAKPRNEGCE
+                               1   ---------+---------   19</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-15" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_15</h2>
+          <p class="chain-subtitle">Length 11 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-15-part1">Part 1</a>
+          <a href="#seq-15-part2">Part 2</a>
+          <a href="#seq-15-part3">Part 3</a>
+          <a href="#seq-15-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-15-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 VNLRVWFNSMA</code></pre>
+      </div>
+
+      <div id="seq-15-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-15-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>4</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>6</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>2</td><td>6, 7</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>4</td><td>3, 6, 7, 10</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>4</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>10</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>6</td></tr><tr><th scope="row">Neutrophil elastase</th><td>3</td><td>1, 5, 11</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>2</td><td>3, 7</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>3</td><td>3, 5, 7</td></tr><tr><th scope="row">Proteinase K</th><td>6</td><td>1, 3, 5, 6, 7, 11</td></tr><tr><th scope="row">Thermolysin</th><td>4</td><td>2, 4, 6, 9</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>4</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Asp-N endopeptidase, Asp-N endopeptidase + N-terminal Glu, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Enterokinase, Factor Xa, Formic acid, Glutamyl endopeptidase, GranzymeB, Hydroxylamine (NH2OH), LysC, LysN, NTCB (2-nitro-5-thiocyanobenzoic acid), Proline-endopeptidase[*], Staphylococcal peptidase I, Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-15-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                  Elast_ProtK|
+                                  Ch_lo_CNBr||
+                                      Therm|||
+             Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK| |||
+       BNPS_Ch_hi_Ch_lo_Iodo_ProtK_Therm|| |||
+                       Elast_Pn2p_ProtK||| |||
+                ArgC_Clost_Therm_Tryps|||| |||
+               Ch_lo_Pn1.3_Pn2p_ProtK||||| |||
+                               Therm|||||| |||
+                        Elast_ProtK||||||| |||
+                                   VNLRVWFNSMA
+                               1   ---------+-   11</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-16" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_16</h2>
+          <p class="chain-subtitle">Length 15 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-16-part1">Part 1</a>
+          <a href="#seq-16-part2">Part 2</a>
+          <a href="#seq-16-part3">Part 3</a>
+          <a href="#seq-16-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-16-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 NCGLSEHEHDANIFV</code></pre>
+      </div>
+
+      <div id="seq-16-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-16-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>9</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>3</td><td>5, 7, 9</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>14</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>3</td><td>4, 7, 14</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>10</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>2</td><td>6, 8</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>11, 15</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>1</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>3</td><td>3, 4, 13</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>3</td><td>3, 4, 13</td></tr><tr><th scope="row">Proteinase K</th><td>7</td><td>4, 6, 8, 11, 13, 14, 15</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>2</td><td>6, 8</td></tr><tr><th scope="row">Thermolysin</th><td>3</td><td>3, 12, 13</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), CNBr, Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, LysC, LysN, Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease, Trypsin</div>
+      </div>
+
+      <div id="seq-16-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                           Elast_ProtK|
+                    Ch_hi_Ch_lo_ProtK||
+              Pn1.3_Pn2p_ProtK_Therm|||
+                              Therm||||
+                       Elast_ProtK|||||
+                            HCOOH||||||
+               AspN_AspN_AspGluN|||||||
+               GluC_ProtK_Staph||||||||
+            AspN_AspGluN_Ch_lo|||||||||
+             GluC_ProtK_Staph||||||||||
+                AspN_AspGluN|||||||||||
+     Ch_lo_Pn1.3_Pn2p_ProtK||||||||||||
+          Pn1.3_Pn2p_Therm|||||||||||||
+                    NTCB| |||||||||||||
+                        NCGLSEHEHDANIFV
+                    1   ---------+-----   15</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-17" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_17</h2>
+          <p class="chain-subtitle">Length 14 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-17-part1">Part 1</a>
+          <a href="#seq-17-part2">Part 2</a>
+          <a href="#seq-17-part3">Part 3</a>
+          <a href="#seq-17-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-17-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 FSCRPCQESAVPEP</code></pre>
+      </div>
+
+      <div id="seq-17-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-17-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>4</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>7, 12</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>1</td><td>1</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>1</td><td>1</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>4</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>2</td><td>8, 13</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>10, 11</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>2</td><td>2, 5</td></tr><tr><th scope="row">Proline-endopeptidase[*]</th><td>1</td><td>5</td></tr><tr><th scope="row">Proteinase K</th><td>5</td><td>1, 8, 10, 11, 13</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>2</td><td>8, 13</td></tr><tr><th scope="row">Thermolysin</th><td>1</td><td>9</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Asp-N endopeptidase, BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, CNBr, Enterokinase, Factor Xa, Formic acid, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, LysC, LysN, Pepsin (pH1.3), Pepsin (pH&gt;2), Thrombin, Tobacco etch virus protease, Trypsin</div>
+      </div>
+
+      <div id="seq-17-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>               GluC_ProtK_Staph|
+                  AspN_AspGluN||
+                  Elast_ProtK|||
+                 Elast_ProtK||||
+                      Therm|||||
+          GluC_ProtK_Staph||||||
+             AspN_AspGluN|||||||
+              NTCB_Prol| |||||||
+            ArgC_Clost|| |||||||
+                NTCB| || |||||||
+  Ch_hi_Ch_lo_ProtK|| || |||||||
+                   FSCRPCQESAVPEP
+               1   ---------+----   14</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-18" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_18</h2>
+          <p class="chain-subtitle">Length 16 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-18-part1">Part 1</a>
+          <a href="#seq-18-part2">Part 2</a>
+          <a href="#seq-18-part3">Part 3</a>
+          <a href="#seq-18-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-18-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 WHFHTFLNREMEFCVF</code></pre>
+      </div>
+
+      <div id="seq-18-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-18-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Arg-C proteinase</th><td>1</td><td>9</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>9, 11</td></tr><tr><th scope="row">BNPS-Skatole</th><td>1</td><td>1</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>4</td><td>1, 3, 6, 13</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>8</td><td>1, 2, 3, 4, 6, 7, 11, 13</td></tr><tr><th scope="row">Clostripain (Clostridiopeptidase B)</th><td>1</td><td>9</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>11</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>2</td><td>10, 12</td></tr><tr><th scope="row">Iodosobenzoic acid</th><td>1</td><td>1</td></tr><tr><th scope="row">Neutrophil elastase</th><td>1</td><td>15</td></tr><tr><th scope="row">NTCB (2-nitro-5-thiocyanobenzoic acid)</th><td>1</td><td>13</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>5</td><td>3, 5, 7, 12, 13</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>5</td><td>3, 5, 7, 12, 13</td></tr><tr><th scope="row">Proteinase K</th><td>10</td><td>1, 3, 5, 6, 7, 10, 12, 13, 15, 16</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>2</td><td>10, 12</td></tr><tr><th scope="row">Thermolysin</th><td>4</td><td>2, 5, 6, 14</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>9</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Asp-N endopeptidase, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Enterokinase, Factor Xa, Formic acid, GranzymeB, Hydroxylamine (NH2OH), LysC, LysN, Proline-endopeptidase[*], Thrombin, Tobacco etch virus protease</div>
+      </div>
+
+      <div id="seq-18-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                             ProtK|
+                                      Elast_ProtK||
+                                           Therm|||
+              Ch_hi_Ch_lo_NTCB_Pn1.3_Pn2p_ProtK||||
+                   GluC_Pn1.3_Pn2p_ProtK_Staph|||||
+                      AspN_AspGluN_Ch_lo_CNBr||||||
+                            GluC_ProtK_Staph|||||||
+              ArgC_AspN_AspGluN_Clost_Tryps||||||||
+                   Ch_lo_Pn1.3_Pn2p_ProtK| ||||||||
+                 Ch_hi_Ch_lo_ProtK_Therm|| ||||||||
+                 Pn1.3_Pn2p_ProtK_Therm||| ||||||||
+                                 Ch_lo|||| ||||||||
+         Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK||||| ||||||||
+                         Ch_lo_Therm|||||| ||||||||
+        BNPS_Ch_hi_Ch_lo_Iodo_ProtK||||||| ||||||||
+                                   WHFHTFLNREMEFCVF
+                               1   ---------+------   16</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+
+    <section id="seq-19" class="chain-section">
+      <div class="chain-header">
+        <div>
+          <h2>seq_19</h2>
+          <p class="chain-subtitle">Length 16 aa · Enzymes 38</p>
+        </div>
+        <nav class="nav chain-nav" aria-label="Chain sections">
+          <a href="#seq-19-part1">Part 1</a>
+          <a href="#seq-19-part2">Part 2</a>
+          <a href="#seq-19-part3">Part 3</a>
+          <a href="#seq-19-part4">Part 4</a>
+        </nav>
+      </div>
+
+      <div id="seq-19-part1" class="chain-block">
+        <div class="section-title"><span class="tag">Part 1</span><span class="title">Input Sequence</span></div>
+        <pre class="sequence-block"><code>           10
+ 1 VYTNFDFYVQGYKIME</code></pre>
+      </div>
+
+      <div id="seq-19-part2" class="chain-block">
+        <div class="section-title"><span class="tag">Part 2</span><span class="title">Selected Enzymes</span></div>
+        <p>Selected cleavage enzymes and chemicals.</p><ul class="enzyme-list"><li>Arg-C proteinase</li>
+<li>Asp-N endopeptidase</li>
+<li>Asp-N endopeptidase + N-terminal Glu</li>
+<li>BNPS-Skatole</li>
+<li>Caspase 1</li>
+<li>Caspase 2</li>
+<li>Caspase 3</li>
+<li>Caspase 4</li>
+<li>Caspase 5</li>
+<li>Caspase 6</li>
+<li>Caspase 7</li>
+<li>Caspase 8</li>
+<li>Caspase 9</li>
+<li>Caspase 10</li>
+<li>Chymotrypsin-high specificity (C-term to [FYW], not before P)</li>
+<li>Chymotrypsin-low specificity (C-term to [FYWML], not before P)</li>
+<li>Clostripain (Clostridiopeptidase B)</li>
+<li>CNBr</li>
+<li>Enterokinase</li>
+<li>Factor Xa</li>
+<li>Formic acid</li>
+<li>Glutamyl endopeptidase</li>
+<li>GranzymeB</li>
+<li>Hydroxylamine (NH2OH)</li>
+<li>Iodosobenzoic acid</li>
+<li>LysC</li>
+<li>LysN</li>
+<li>Neutrophil elastase</li>
+<li>NTCB (2-nitro-5-thiocyanobenzoic acid)</li>
+<li>Pepsin (pH1.3)</li>
+<li>Pepsin (pH&gt;2)</li>
+<li>Proline-endopeptidase[*]</li>
+<li>Proteinase K</li>
+<li>Staphylococcal peptidase I</li>
+<li>Thermolysin</li>
+<li>Thrombin</li>
+<li>Tobacco etch virus protease</li>
+<li>Trypsin</li></ul><div class="note">[*] NOTE: Proline-endopeptidase was reported to cleave only substrates whose sequences do not exceed 30 amino acids. An unusual beta-propeller domain regulates proteolysis: see <a href="https://pubmed.ncbi.nlm.nih.gov/9695945/">Fulop et al., 1998</a>.</div>
+      </div>
+
+      <div id="seq-19-part3" class="chain-block">
+        <div class="section-title"><span class="tag">Part 3</span><span class="title">Cleavage Site Table</span></div>
+        <table><caption class="sr-only">Cleavage site table</caption><thead><tr><th scope="col">Name of enzyme</th><th scope="col">No. of cleavages</th><th scope="col">Positions of cleavage sites</th></tr></thead><tbody><tr><th scope="row">Asp-N endopeptidase</th><td>1</td><td>5</td></tr><tr><th scope="row">Asp-N endopeptidase + N-terminal Glu</th><td>2</td><td>5, 15</td></tr><tr><th scope="row">Chymotrypsin-high specificity (C-term to [FYW], not before P)</th><td>5</td><td>2, 5, 7, 8, 12</td></tr><tr><th scope="row">Chymotrypsin-low specificity (C-term to [FYWML], not before P)</th><td>6</td><td>2, 5, 7, 8, 12, 15</td></tr><tr><th scope="row">CNBr</th><td>1</td><td>15</td></tr><tr><th scope="row">Formic acid</th><td>1</td><td>6</td></tr><tr><th scope="row">Glutamyl endopeptidase</th><td>1</td><td>16</td></tr><tr><th scope="row">LysC</th><td>1</td><td>13</td></tr><tr><th scope="row">LysN</th><td>1</td><td>12</td></tr><tr><th scope="row">Neutrophil elastase</th><td>2</td><td>1, 9</td></tr><tr><th scope="row">Pepsin (pH1.3)</th><td>4</td><td>4, 5, 6, 7</td></tr><tr><th scope="row">Pepsin (pH&gt;2)</th><td>7</td><td>4, 5, 6, 7, 8, 11, 12</td></tr><tr><th scope="row">Proteinase K</th><td>10</td><td>1, 2, 3, 5, 7, 8, 9, 12, 14, 16</td></tr><tr><th scope="row">Staphylococcal peptidase I</th><td>1</td><td>16</td></tr><tr><th scope="row">Thermolysin</th><td>4</td><td>4, 8, 13, 14</td></tr><tr><th scope="row">Tobacco etch virus protease</th><td>1</td><td>10</td></tr><tr><th scope="row">Trypsin</th><td>1</td><td>13</td></tr></tbody></table><div class="notice">The selected enzymes do not cut: Arg-C proteinase, BNPS-Skatole, Caspase 1, Caspase 2, Caspase 3, Caspase 4, Caspase 5, Caspase 6, Caspase 7, Caspase 8, Caspase 9, Caspase 10, Clostripain (Clostridiopeptidase B), Enterokinase, Factor Xa, GranzymeB, Hydroxylamine (NH2OH), Iodosobenzoic acid, NTCB (2-nitro-5-thiocyanobenzoic acid), Proline-endopeptidase[*], Thrombin</div>
+      </div>
+
+      <div id="seq-19-part4" class="chain-block tracks">
+        <div class="section-title"><span class="tag">Part 4</span><span class="title">Cleavage Mapping</span></div>
+        <pre class="tracks-block"><code>                                               GluC_ProtK_Staph|
+                                       AspN_AspGluN_Ch_lo_CNBr||
+                                                  ProtK_Therm|||
+                                            LysC_Therm_Tryps||||
+                                Ch_hi_Ch_lo_LysN_Pn2p_ProtK|||||
+                                                      Pn2p||||||
+                                                      TEV|||||||
+                                             Elast_ProtK||||||||
+                           Ch_hi_Ch_lo_Pn2p_ProtK_Therm|||||||||
+                          Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK||||||||||
+                                     HCOOH_Pn1.3_Pn2p|||||||||||
+      AspN_AspN_AspGluN_Ch_hi_Ch_lo_Pn1.3_Pn2p_ProtK||||||||||||
+                                   Pn1.3_Pn2p_Therm|||||||||||||
+                                             ProtK||||||||||||||
+                                Ch_hi_Ch_lo_ProtK|||||||||||||||
+                                     Elast_ProtK||||||||||||||||
+                                                VYTNFDFYVQGYKIME
+                                            1   ---------+------   16</code></pre>
+      </div>
+
+      <div class="chain-footer"><a href="#top">Back to top</a></div>
+    </section>
+  </main>
+
+  <footer>Generated by peptide-cutter</footer>
+</div>
+
+</body>
+</html>
