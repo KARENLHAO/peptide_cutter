@@ -15,7 +15,7 @@ from .render import (
     write_part3_csv,
     write_result_parts,
 )
-from .utils.html_report import build_html_report
+from .utils.html_report import build_html_report, build_html_index_report
 from .utils.merge_part4_txts import (
     enzyme_abbr,
     generate_enzyme_txts,
@@ -31,6 +31,8 @@ from .sequence import (
 )
 
 MAX_FASTA_RECORDS = 10000
+MERGED_CSV_NAME = "All_in_One.csv"
+MERGED_HTML_NAME = "All_in_One.html"
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -59,9 +61,19 @@ def main(argv: List[str] | None = None) -> int:
         help="Line width for sequence display and Part 4 blocks (10-60).",
     )
     parser.add_argument(
+        "--csv-name",
+        default=MERGED_CSV_NAME,
+        help="Merged CSV file name (default: All_in_One.csv).",
+    )
+    parser.add_argument(
         "--cleanup-tmp",
         action="store_true",
         help="Remove the tmp directory after the run completes.",
+    )
+    parser.add_argument(
+        "--tar-results",
+        action="store_true",
+        help="Package the results directory into results.tar.gz.",
     )
     args = parser.parse_args(argv)
 
@@ -76,25 +88,39 @@ def main(argv: List[str] | None = None) -> int:
         if not records:
             raise ValueError("No FASTA records found in input.")
 
-        used_output_ids: dict[str, int] = {}
+        chain_counts: dict[str, int] = {}
+        safe_counts: dict[str, int] = {}
+        merged_csv_parts: List[str] = []
+        merged_records: List[dict] = []
+        report_dir, csv_dir = _resolve_output_dirs(args.out)
         for accession, description, raw_seq in records:
+            chain_id = _reserve_chain_id(accession, chain_counts)
             seq, meta = validate_sequence(raw_seq, strict=True)
             if not seq:
                 raise ValueError(f"Empty sequence for record: {accession}")
-            meta["accession"] = accession
+            meta["accession"] = chain_id
             meta["description"] = description
 
-            output_id = _reserve_output_id(accession, used_output_ids)
+            output_id = _reserve_safe_id(chain_id, safe_counts)
             sites_by_enzyme = find_cleavage_sites(seq, rules, selected)
             summary = build_summary(selected, sites_by_enzyme)
             parts = render_result_parts(seq, meta, selected, summary, args.line_width)
 
-            html_out, csv_out = _resolve_output_paths(args.out, output_id)
+            html_out = report_dir / f"{output_id}_report.html"
             txt_base = html_out.with_suffix(".txt")
 
             write_result_parts(str(txt_base), parts)
-            part3_csv = render_part3_csv(summary)
-            write_part3_csv(str(csv_out), part3_csv)
+            part3_csv = render_part3_csv(
+                summary,
+                chain_id=chain_id,
+                include_header=not merged_csv_parts,
+            )
+            if part3_csv:
+                merged_csv_parts.append(part3_csv)
+            per_chain_csv = render_part3_csv(summary)
+            if per_chain_csv:
+                per_chain_path = csv_dir / f"{output_id}.csv"
+                write_part3_csv(str(per_chain_path), per_chain_csv)
             enzyme_dir = Path("tmp") / "enzyme_txts" / output_id
             rows = [
                 (row["name"], row["sites"])
@@ -124,6 +150,36 @@ def main(argv: List[str] | None = None) -> int:
                 part4_text=part4_text,
             )
             html_out.write_text(html, encoding="utf-8")
+            merged_records.append(
+                {
+                    "chain_id": chain_id,
+                    "safe_id": output_id,
+                    "seq": seq,
+                    "meta": meta,
+                    "summary": summary,
+                    "part4_text": part4_text,
+                }
+            )
+
+        merged_outputs: List[Path] = []
+        if merged_csv_parts:
+            merged_csv_text = "".join(merged_csv_parts)
+            merged_csv_path = csv_dir / _ensure_csv_name(args.csv_name)
+            write_part3_csv(str(merged_csv_path), merged_csv_text)
+            merged_outputs.append(merged_csv_path)
+        if merged_records:
+            index_html = build_html_index_report(
+                records=merged_records,
+                line_width=args.line_width,
+                title="PeptideCutter Report",
+            )
+            report_path = report_dir / MERGED_HTML_NAME
+            report_path.write_text(index_html, encoding="utf-8")
+            merged_outputs.append(report_path)
+        if merged_outputs:
+            _copy_to_cwd(merged_outputs)
+        if args.tar_results:
+            _tar_results(args.out)
 
         if args.cleanup_tmp:
             tmp_dir = Path("tmp")
@@ -230,7 +286,7 @@ def _split_enzymes_args(raw: List[str]) -> List[str]:
     return [item.strip() for item in raw if item.strip()]
 
 
-def _resolve_output_paths(out_arg: str, seq_id: str) -> tuple[Path, Path]:
+def _resolve_output_dirs(out_arg: str) -> tuple[Path, Path]:
     base_dir = Path(out_arg or ".")
     if base_dir.suffix:
         base_dir = base_dir.parent
@@ -240,20 +296,27 @@ def _resolve_output_paths(out_arg: str, seq_id: str) -> tuple[Path, Path]:
     csv_dir = results_dir / "csv"
     report_dir.mkdir(parents=True, exist_ok=True)
     csv_dir.mkdir(parents=True, exist_ok=True)
-
-    safe_id = _sanitize_id(seq_id)
-    html_out = report_dir / f"{safe_id}_report.html"
-    csv_out = csv_dir / f"{safe_id}.csv"
-    return html_out, csv_out
+    return report_dir, csv_dir
 
 
-def _reserve_output_id(seq_id: str, used: dict[str, int]) -> str:
+def _reserve_chain_id(seq_id: str, counts: dict[str, int]) -> str:
+    base = seq_id.strip() if seq_id else "User_Sequence"
+    if not base:
+        base = "User_Sequence"
+    if base not in counts:
+        counts[base] = 0
+        return base
+    counts[base] += 1
+    return f"{base}_dup{counts[base]}"
+
+
+def _reserve_safe_id(seq_id: str, used: dict[str, int]) -> str:
     base = _sanitize_id(seq_id)
     if base not in used:
-        used[base] = 1
+        used[base] = 0
         return base
     used[base] += 1
-    return f"{base}_{used[base]}"
+    return f"{base}_dup{used[base]}"
 
 
 def _sanitize_id(value: str) -> str:
@@ -265,6 +328,40 @@ def _sanitize_id(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", cleaned)
     cleaned = cleaned.strip("._-")
     return cleaned or "User_Sequence"
+
+
+def _ensure_csv_name(name: str) -> str:
+    cleaned = (name or "").strip()
+    if not cleaned:
+        return MERGED_CSV_NAME
+    if not cleaned.lower().endswith(".csv"):
+        cleaned = f"{cleaned}.csv"
+    return cleaned
+
+
+def _copy_to_cwd(paths: List[Path]) -> None:
+    cwd = Path.cwd()
+    for path in paths:
+        if not path.exists():
+            continue
+        dest = cwd / path.name
+        try:
+            if path.resolve() == dest.resolve():
+                continue
+        except FileNotFoundError:
+            pass
+        shutil.copy2(path, dest)
+
+
+def _tar_results(out_arg: str) -> None:
+    base_dir = Path(out_arg or ".")
+    if base_dir.suffix:
+        base_dir = base_dir.parent
+    results_dir = base_dir if base_dir.name == "results" else base_dir / "results"
+    if not results_dir.exists():
+        return
+    tar_path = results_dir.parent / "results.tar.gz"
+    shutil.make_archive(str(tar_path.with_suffix("")), "gztar", root_dir=results_dir)
 
 
 if __name__ == "__main__":

@@ -44,10 +44,12 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
 - `--fasta`: FASTA file path. Multi-FASTA is supported (up to 10,000 records).
 - `--enzymes`: enzyme names/abbreviations or `all`. Multiple enzymes can be
   provided as a semicolon-separated string, e.g. `"Casp1;Tryps;FXa"`.
-- `--out`: base output directory (default `.`). 
+- `--out`: base output directory (default `.`). A `results/` folder is created
   under this directory with `report/` and `csv/` subfolders.
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
+- `--csv-name`: merged CSV file name (default `All_in_One.csv`).
 - `--cleanup-tmp`: remove the `tmp/` directory after the run completes.
+- `--tar-results`: package the `results/` directory into `results.tar.gz`.
 
 ## Illegal Characters
 
@@ -55,7 +57,11 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 
 ## Output Files
 
-- CSV (`results/csv/<chain_id>.csv`): Table of cutting points in the sequence.
+- CSV (`results/csv/All_in_One.csv`): Merged table of cutting points. The first
+  column is the chain ID.
+- CSV (`results/csv/<chain_id>.csv`): Per-chain table of cutting points.
+- HTML (`results/report/All_in_One.html`): Single-page report with a directory of chains
+  and in-page jump links to each chain section.
 - HTML (`results/report/<chain_id>_report.html`): 4 parts
 1. Input Sequence Display
 2. Selected Enzymes
@@ -63,9 +69,10 @@ Any illegal characters (including `B`, `J`, `X`, `Z`, or other non-standard lett
 4. The mapping diagram of the cleavage sites of the selected enzymes and chemical substances on your sequence
 
 Note: `<chain_id>` is the first token in the FASTA header (the accession). If missing,
-`User_Sequence` is used.
+`User_Sequence` is used. When duplicate chain IDs are present, suffixes like
+`_dup1`, `_dup2` are appended (dup count = repeat index).
 When a FASTA contains multiple records, each record is processed independently
-and produces its own HTML/CSV outputs.
+and produces its own HTML output; a merged HTML index is also generated. The CSV is merged.
 
 ## Enzyme Abbreviations
 

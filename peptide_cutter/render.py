@@ -67,18 +67,27 @@ def render_result_txt(
     return "\n\n".join(part.rstrip() for part in parts).rstrip() + "\n"
 
 
-def render_part3_csv(summary: Dict) -> str:
+def render_part3_csv(
+    summary: Dict,
+    chain_id: str | None = None,
+    include_header: bool = True,
+) -> str:
     buffer = io.StringIO()
     writer = csv.writer(buffer, lineterminator="\n")
-    writer.writerow(
-        ["Name of enzyme", "No. of cleavages", "Positions of cleavage sites"]
-    )
+    header = ["Name of enzyme", "No. of cleavages", "Positions of cleavage sites"]
+    if chain_id is not None:
+        header = ["Chain ID"] + header
+    if include_header:
+        writer.writerow(header)
     for row in summary["table_rows"]:
         if row["count"] == 0:
             continue
         positions = ", ".join(str(p) for p in row["sites"]) if row["sites"] else "-"
         name = _clean_csv_enzyme_name(row["name"])
-        writer.writerow([name, row["count"], positions])
+        record = [name, row["count"], positions]
+        if chain_id is not None:
+            record = [chain_id] + record
+        writer.writerow(record)
     return buffer.getvalue()
 
 

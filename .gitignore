@@ -25,7 +25,8 @@ tests/
 
 result*
 
-run*
+run.py
+run.sh
 
 *fasta
 
