@@ -68,7 +68,7 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument(
         "--tar-results",
         action="store_true",
-        help="Package the results directory into results.tar.gz.",
+        help="Package the results directory into clvg_site_pred_results.tar.gz.",
     )
     args = parser.parse_args(argv)
 
@@ -346,8 +346,8 @@ def _tar_results(out_arg: str) -> None:
     results_dir = base_dir if base_dir.name == "results" else base_dir / "results"
     if not results_dir.exists():
         return
-    tar_path = results_dir.parent / "results.tar.gz"
-    shutil.make_archive(str(tar_path.with_suffix("")), "gztar", root_dir=results_dir)
+    tar_base = results_dir.parent / "clvg_site_pred_results"
+    shutil.make_archive(str(tar_base), "gztar", root_dir=results_dir)
 
 
 if __name__ == "__main__":

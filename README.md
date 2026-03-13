@@ -50,7 +50,7 @@ peptide-cutter --seq "ACDEFGHIK" --enzymes all --out . --cleanup-tmp
   under this directory with `report/` and `csv/` subfolders.
 - `--line-width`: line width for sequence display and Part 4 blocks (10-60, default 60).
 - `--cleanup-tmp`: remove the `tmp/` directory after the run completes.
-- `--tar-results`: package the `results/` directory into `results.tar.gz`.
+- `--tar-results`: package the `results/` directory into `clvg_site_pred_results.tar.gz`.
 
 ## Illegal Characters
 
@@ -112,7 +112,7 @@ All_in_One.html output contains cleavage information for all chains, shown here:
 [All_in_One.html](https://karenlhao.github.io/peptide_cutter/)
 
 
-results.tar.gz contains per-chain CSVs and HTML report outputs for all chains.
+clvg_site_pred_results.tar.gz contains per-chain CSVs and HTML report outputs for all chains.
 
 ## Enzyme Abbreviations
 
